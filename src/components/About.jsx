@@ -44,10 +44,10 @@ const About = () => {
     <section
       id="about"
       ref={ref}
-      className="py-20 bg-transparent"
+      className="min-h-screen flex items-center justify-center pt-16 relative overflow-hidden"
     >
       <motion.div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white/90 backdrop-blur-md rounded-3xl p-8 sm:p-12 shadow-2xl"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
