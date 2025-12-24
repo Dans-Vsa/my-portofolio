@@ -221,6 +221,15 @@ export const portfolioData = {
       liveLink: "#",
       githubLink: "https://github.com/Dans-Vsa/Game-ALIENKI",
     },
+    {
+      id: 3,
+      title: "Medical System",
+      description: "Sistem Konsultasi Medis modern untuk pasien dan dokter, fitur booking, notifikasi, dan dashboard.",
+      image: "/projects/medicalsystem.png",
+      tags: ["Web App", "React", "Node.js", "Tailwind", "Fullstack"],
+      liveLink: "#",
+      githubLink: "https://github.com/Dans-Vsa/MedicalSystem",
+    },
   ],
 
 };
