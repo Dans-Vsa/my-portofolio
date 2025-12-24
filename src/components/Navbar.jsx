@@ -80,7 +80,12 @@ const Navbar = () => {
           </a>
 
           {/* Desktop Navigation - Center */}
-          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-2 shadow-lg">
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 
+            bg-white/20 backdrop-blur-xl rounded-full px-3 py-2 
+            shadow-2xl border border-white/20 
+            transition-all duration-300 
+            ring-1 ring-blue-200/30 
+            hover:bg-white/30 hover:shadow-blue-200/40 ">
             {menuItems.map((item) => (
               <a
                 key={item.label}
@@ -88,9 +93,10 @@ const Navbar = () => {
                 onClick={(e) => handleClick(e, item.href)}
                 className={`px-4 md:px-6 py-2 text-sm md:text-base rounded-full font-medium transition-all duration-300 ${
                   activeSection === item.href
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:text-blue-500'
+                    ? 'bg-blue-500/90 text-white shadow-md shadow-blue-400/30'
+                    : 'text-gray-100 hover:text-blue-400 hover:bg-white/30'
                 }`}
+                style={{backdropFilter: 'blur(8px)'}} // fallback for extra blur
               >
                 {item.label}
               </a>
