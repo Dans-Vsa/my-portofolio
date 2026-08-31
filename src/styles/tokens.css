@@ -1,0 +1,33 @@
+/* Design tokens extracted from design.md (gabrielbeaugonin.com reference).
+   Suisse Intl is a commercial font (Swiss Typefaces) with no legal free
+   source — it can't be self-hosted without a purchased license. Switzer
+   (Fontshare, free) is used instead: it's purpose-built as a close, modern
+   grotesk alternative to Suisse Int'l, much closer than a generic fallback. */
+@import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap');
+
+:root {
+  --color-bg: #f6f6f6;
+  --color-bg-secondary: #ffffff;
+  --color-text: #000000;
+  --color-text-secondary: #666666;
+  --color-primary: #888888;
+  --color-secondary: #aaaaaa;
+  --color-border: #eaeaea;
+
+  --space-1: 21.3334px;
+  --space-2: 42.6668px;
+  --space-3: 64.0002px;
+  --space-4: 85.3336px;
+
+  --radius-card: 32px;
+  --radius-btn: 16px;
+
+  --font-heading: 'Switzer', system-ui, sans-serif;
+  --font-body: 'Switzer', system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
