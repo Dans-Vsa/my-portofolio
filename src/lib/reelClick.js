@@ -1,5 +1,5 @@
-// Synthesized camera film winding ratchet "tik" — crisp mechanical micro-clicks
-// built purely with the Web Audio API without external media files.
+// Synthesized camera film winding ratchet "tik-tik"
+// Built with the Web Audio API without external audio files.
 
 let audioCtx = null;
 
@@ -7,27 +7,46 @@ function getContext() {
   if (typeof window === 'undefined') return null;
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
-  if (!audioCtx) audioCtx = new Ctx();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!audioCtx) {
+    audioCtx = new Ctx();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
   return audioCtx;
 }
 
-export function playReelClick(volume = 0.15) {
+// Auto-unlock AudioContext on first user interaction to satisfy browser autoplay policy
+if (typeof window !== 'undefined') {
+  const unlock = () => {
+    const ctx = getContext();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+  };
+  ['pointerdown', 'touchstart', 'click', 'keydown', 'wheel'].forEach((evt) => {
+    window.addEventListener(evt, unlock, { passive: true });
+  });
+}
+
+export function playReelClick(volume = 0.35) {
   const ctx = getContext();
   if (!ctx) return;
 
-  const now = ctx.currentTime;
-  // Subtle pitch jitter between teeth to mimic natural gear winding
-  const jitter = 0.95 + Math.random() * 0.1;
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
 
-  // 1. Crisp high-frequency noise transient (pawl / tooth snap)
-  const noiseDuration = 0.008; // 8ms snappy burst
+  const now = ctx.currentTime;
+  const jitter = 0.96 + Math.random() * 0.08;
+
+  // 1. Crisp mechanical transient noise burst (spring & tooth release)
+  const noiseDuration = 0.018; // 18ms for clear presence
   const bufferSize = Math.floor(ctx.sampleRate * noiseDuration);
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    // Sharp envelope
-    const env = Math.pow(1 - i / bufferSize, 3);
+    const env = Math.pow(1 - i / bufferSize, 2.2);
     data[i] = (Math.random() * 2 - 1) * env;
   }
 
@@ -36,28 +55,28 @@ export function playReelClick(volume = 0.15) {
 
   const bandpass = ctx.createBiquadFilter();
   bandpass.type = 'bandpass';
-  bandpass.frequency.setValueAtTime(5400 * jitter, now);
-  bandpass.Q.setValueAtTime(3.2, now);
+  bandpass.frequency.setValueAtTime(3600 * jitter, now);
+  bandpass.Q.setValueAtTime(2.8, now);
 
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(volume * 0.9, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+  noiseGain.gain.setValueAtTime(volume * 0.85, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
 
   noise.connect(bandpass).connect(noiseGain).connect(ctx.destination);
   noise.start(now);
-  noise.stop(now + 0.01);
+  noise.stop(now + 0.02);
 
-  // 2. High metallic ping transient (the distinct "tik" ratchet body)
+  // 2. Metallic "tik" tooth resonant transient
   const osc = ctx.createOscillator();
   osc.type = 'triangle';
-  osc.frequency.setValueAtTime(4200 * jitter, now);
-  osc.frequency.exponentialRampToValueAtTime(1900 * jitter, now + 0.006);
+  osc.frequency.setValueAtTime(3400 * jitter, now);
+  osc.frequency.exponentialRampToValueAtTime(1400 * jitter, now + 0.012);
 
   const oscGain = ctx.createGain();
-  oscGain.gain.setValueAtTime(volume * 0.4, now);
-  oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.007);
+  oscGain.gain.setValueAtTime(volume * 0.5, now);
+  oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
 
   osc.connect(oscGain).connect(ctx.destination);
   osc.start(now);
-  osc.stop(now + 0.008);
+  osc.stop(now + 0.016);
 }
