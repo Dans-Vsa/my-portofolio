@@ -1,3 +1,5 @@
+@import './styles/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,12 +9,18 @@
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge/IE */
   }
-  
+
+  html::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Edge — page stays scrollable, bar is just hidden */
+  }
+
   body {
     @apply overflow-x-hidden;
   }
-  
+
   * {
     -webkit-overflow-scrolling: touch;
   }
