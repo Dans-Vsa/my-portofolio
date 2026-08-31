@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
 import './InfiniteSpiral.css';
 
-// Ported from React Bits' InfiniteSpiral. Adapted for this project: cards
-// render a `preview` React node (a miniature of a real section) instead of
-// an image. The scroll physics/animation loop below is unchanged from the
-// original component.
+// InfiniteSpiral with smooth continuous physics (wheel, touch, drag)
+// and original card proportion/fitting calculations.
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const modulo = (value, divisor) => ((value % divisor) + divisor) % divisor;
@@ -17,25 +15,24 @@ const InfiniteSpiral = ({
   items = [],
   speed = 0.55,
   direction = 'up',
-  animationMode = 'auto',
-  radius = 170,
-  cardWidth = 100,
-  cardHeight = 100,
-  verticalSpacing = 60,
+  animationMode = 'scroll',
+  radius = 200,
+  cardWidth = 300,
+  cardHeight = 190,
+  verticalSpacing = 140,
   perspective = 1000,
-  cardsPerTurn = 7,
+  cardsPerTurn = 5,
   rotation = 0,
   cardTilt = 0,
-  cardRadius = 10,
-  centerScale = 1.2,
+  cardRadius = 24,
+  centerScale = 1.15,
   edgeFade = 0.3,
   edgeBlur = 6,
   pauseOnHover = true,
   onActiveIndexChange,
   onStep,
+  onCardClick,
   stepsPerCard = 4,
-  infiniteRecenter = true,
-  scrollTo = (y) => window.scrollTo(0, y),
   className = '',
 }) => {
   const rootRef = useRef(null);
@@ -61,7 +58,6 @@ const InfiniteSpiral = ({
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const scrollEnabled = animationMode === 'scroll' || animationMode === 'all';
     const scrollSpeedMultiplier = Math.max(speed, 0) / 0.55;
-    let lastScrollY = window.scrollY;
 
     const resizeObserver = new ResizeObserver(() => {
       bounds = root.getBoundingClientRect();
@@ -76,40 +72,42 @@ const InfiniteSpiral = ({
     );
     intersectionObserver.observe(root);
 
-    const handleScroll = () => {
-      const nextScrollY = window.scrollY;
-      const scrollDelta = nextScrollY - lastScrollY;
-      lastScrollY = nextScrollY;
-      if (scrollEnabled && visibleRef.current && scrollDelta !== 0) {
-        targetProgressRef.current += clamp(
-          (scrollDelta * scrollSpeedMultiplier) / Math.max(verticalSpacing * 2, 1),
-          -1.5,
-          1.5
-        );
-      }
+    // Direct wheel handler
+    const handleWheel = (e) => {
+      if (!scrollEnabled || !visibleRef.current) return;
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 32;
+      else if (e.deltaMode === 2) delta *= 100;
 
-      // The page's scroll track is finite, but the spiral shouldn't be —
-      // once the user nears either end, silently recycle the scroll
-      // position back to the middle. `lastScrollY` is updated to match in
-      // the same tick, so this jump contributes zero delta and is
-      // invisible in the render loop.
-      if (scrollEnabled && infiniteRecenter) {
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const margin = Math.max(window.innerHeight * 0.5, 400);
-        if (maxScroll > margin * 2 && (nextScrollY < margin || nextScrollY > maxScroll - margin)) {
-          const mid = maxScroll / 2;
-          scrollTo(mid);
-          lastScrollY = mid;
-        }
-      }
+      const stepDelta = (delta * scrollSpeedMultiplier) / 400;
+      targetProgressRef.current += clamp(stepDelta, -1.5, 1.5);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Touch swipe handler for mobile
+    let touchLastY = 0;
+    const handleTouchStart = (e) => {
+      if (!scrollEnabled || e.touches.length === 0) return;
+      touchLastY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      if (!scrollEnabled || e.touches.length === 0) return;
+      const currentY = e.touches[0].clientY;
+      const deltaY = touchLastY - currentY;
+      touchLastY = currentY;
+      const stepDelta = (deltaY * scrollSpeedMultiplier) / 220;
+      targetProgressRef.current += clamp(stepDelta, -1.2, 1.2);
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     const render = (time) => {
       const delta = Math.min((time - previousTime) / 1000, 0.05);
       previousTime = time;
 
-      const autoEnabled = animationMode === 'auto' || animationMode === 'all';
+      const autoEnabled = animationMode === 'auto';
       const motionPaused = draggingRef.current || (pauseOnHover && hoveredRef.current);
       const directionMultiplier = direction === 'down' ? -1 : 1;
       const desiredAutoSpeed =
@@ -127,6 +125,8 @@ const InfiniteSpiral = ({
       const half = count / 2;
       const width = Math.max(bounds.width, 1);
       const height = Math.max(bounds.height, 1);
+      
+      // Original card fitting calculations
       const fit = Math.min(1, width / (cardWidth * 2.8), height / (cardHeight * 2.35));
       const responsiveRadius = Math.min(radius, Math.max(72, width * 0.36)) * fit;
       const fadeStart = clamp(1 - edgeFade, 0, 0.98);
@@ -149,6 +149,7 @@ const InfiniteSpiral = ({
         const visualScale = scale * depthScale;
         const depth = (z / Math.max(responsiveRadius, 1) + 1) / 2;
         const blur = edgeBlur * smoothstep(0.35, 1, edge);
+
         card.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${offset * verticalSpacing * fit}px, 0) rotateZ(${cardTilt}deg) scale(${visualScale})`;
         card.style.opacity = opacity.toFixed(3);
         card.style.filter = blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : 'none';
@@ -169,8 +170,10 @@ const InfiniteSpiral = ({
         if (lastStepRef.current === null) {
           lastStepRef.current = stepIndex;
         } else if (stepIndex !== lastStepRef.current) {
+          if (Math.abs(stepIndex - lastStepRef.current) < 8) {
+            onStep();
+          }
           lastStepRef.current = stepIndex;
-          onStep();
         }
       }
 
@@ -183,7 +186,9 @@ const InfiniteSpiral = ({
       cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
   }, [
     items,
@@ -205,8 +210,6 @@ const InfiniteSpiral = ({
     onActiveIndexChange,
     onStep,
     stepsPerCard,
-    infiniteRecenter,
-    scrollTo,
   ]);
 
   const rootStyle = {
@@ -214,12 +217,10 @@ const InfiniteSpiral = ({
     '--infinite-spiral-card-width': `${cardWidth}px`,
     '--infinite-spiral-card-height': `${cardHeight}px`,
     '--infinite-spiral-card-radius': `${cardRadius}px`,
-    cursor: animationMode === 'drag' || animationMode === 'all' ? 'grab' : 'default',
-    touchAction: animationMode === 'drag' || animationMode === 'all' ? 'pan-x' : 'auto',
-    userSelect: animationMode === 'drag' || animationMode === 'all' ? 'none' : 'auto',
+    cursor: 'grab',
+    touchAction: 'none',
+    userSelect: 'none',
   };
-
-  const dragEnabled = animationMode === 'drag' || animationMode === 'all';
 
   const stopDragging = (event) => {
     if (!draggingRef.current) return;
@@ -227,7 +228,7 @@ const InfiniteSpiral = ({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    event.currentTarget.style.cursor = dragEnabled ? 'grab' : 'default';
+    event.currentTarget.style.cursor = 'grab';
   };
 
   return (
@@ -242,7 +243,7 @@ const InfiniteSpiral = ({
         hoveredRef.current = false;
       }}
       onPointerDown={(event) => {
-        if (!dragEnabled || event.button !== 0) return;
+        if (event.button !== 0) return;
         draggingRef.current = true;
         dragMovedRef.current = false;
         lastPointerYRef.current = event.clientY;
@@ -282,6 +283,11 @@ const InfiniteSpiral = ({
               rel={item.target === '_blank' ? 'noreferrer' : undefined}
               role="listitem"
               aria-label={item.label}
+              onClick={() => {
+                if (!dragMovedRef.current && onCardClick) {
+                  onCardClick(item, index);
+                }
+              }}
             >
               {item.preview}
             </Card>
