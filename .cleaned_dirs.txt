@@ -1,2 +1,0 @@
-DELETED DIR:
-src/assets/
