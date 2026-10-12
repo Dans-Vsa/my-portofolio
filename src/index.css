@@ -26,9 +26,18 @@
   }
 }
 
-/* Smooth scrolling for all browsers */
+/* Smooth scrolling and hidden scrollbars */
 @layer utilities {
   .scroll-smooth {
     scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar for Chrome, Safari, Edge, Firefox while keeping functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
