@@ -33,10 +33,12 @@ const InfiniteSpiral = ({
   onStep,
   onCardClick,
   stepsPerCard = 4,
+  hiddenCardId = null,
   className = '',
 }) => {
   const rootRef = useRef(null);
   const cardRefs = useRef([]);
+  const hiddenCardIdRef = useRef(hiddenCardId);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const autoSpeedRef = useRef(0);
@@ -44,9 +46,15 @@ const InfiniteSpiral = ({
   const visibleRef = useRef(true);
   const draggingRef = useRef(false);
   const lastPointerYRef = useRef(0);
+  const pointerStartXRef = useRef(0);
+  const pointerStartYRef = useRef(0);
   const dragMovedRef = useRef(false);
   const lastActiveIndexRef = useRef(-1);
   const lastStepRef = useRef(null);
+
+  useEffect(() => {
+    hiddenCardIdRef.current = hiddenCardId;
+  }, [hiddenCardId]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -134,6 +142,12 @@ const InfiniteSpiral = ({
 
       cardRefs.current.forEach((card, index) => {
         if (!card) return;
+        const item = items[index];
+        if (hiddenCardIdRef.current && item && item.id === hiddenCardIdRef.current) {
+          card.style.opacity = '0';
+          card.style.pointerEvents = 'none';
+          return;
+        }
         let offset = index - progressRef.current;
         offset = modulo(offset + half, count) - half;
 
@@ -223,12 +237,13 @@ const InfiniteSpiral = ({
   };
 
   const stopDragging = (event) => {
-    if (!draggingRef.current) return;
     draggingRef.current = false;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event && event.currentTarget) {
+      if (typeof event.currentTarget.hasPointerCapture === 'function' && event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      event.currentTarget.style.cursor = 'grab';
     }
-    event.currentTarget.style.cursor = 'grab';
   };
 
   return (
@@ -244,27 +259,45 @@ const InfiniteSpiral = ({
       }}
       onPointerDown={(event) => {
         if (event.button !== 0) return;
-        draggingRef.current = true;
-        dragMovedRef.current = false;
+        pointerStartXRef.current = event.clientX;
+        pointerStartYRef.current = event.clientY;
         lastPointerYRef.current = event.clientY;
+        dragMovedRef.current = false;
+        draggingRef.current = false;
         targetProgressRef.current = progressRef.current;
-        event.currentTarget.setPointerCapture(event.pointerId);
-        event.currentTarget.style.cursor = 'grabbing';
       }}
       onPointerMove={(event) => {
-        if (!draggingRef.current) return;
-        const pointerDelta = event.clientY - lastPointerYRef.current;
-        lastPointerYRef.current = event.clientY;
-        if (Math.abs(pointerDelta) > 0.5) dragMovedRef.current = true;
-        targetProgressRef.current -= pointerDelta / Math.max(verticalSpacing, 1);
+        if (event.buttons !== 1) return;
+        const totalDist = Math.hypot(
+          event.clientX - pointerStartXRef.current,
+          event.clientY - pointerStartYRef.current
+        );
+
+        if (!draggingRef.current && totalDist > 5) {
+          draggingRef.current = true;
+          dragMovedRef.current = true;
+          try {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          } catch {
+            // ignore if not supported
+          }
+          event.currentTarget.style.cursor = 'grabbing';
+        }
+
+        if (draggingRef.current) {
+          const pointerDelta = event.clientY - lastPointerYRef.current;
+          lastPointerYRef.current = event.clientY;
+          targetProgressRef.current -= pointerDelta / Math.max(verticalSpacing, 1);
+        }
       }}
       onPointerUp={stopDragging}
       onPointerCancel={stopDragging}
       onClickCapture={(event) => {
-        if (!dragMovedRef.current) return;
-        event.preventDefault();
-        event.stopPropagation();
-        dragMovedRef.current = false;
+        if (dragMovedRef.current) {
+          event.preventDefault();
+          event.stopPropagation();
+          dragMovedRef.current = false;
+        }
       }}
     >
       <div className="infinite-spiral__stage" role="list" aria-label="Section preview spiral">
@@ -281,11 +314,19 @@ const InfiniteSpiral = ({
               href={item.href}
               target={item.target}
               rel={item.target === '_blank' ? 'noreferrer' : undefined}
-              role="listitem"
+              role={item.href ? undefined : 'button'}
+              tabIndex={0}
               aria-label={item.label}
-              onClick={() => {
+              onClick={(e) => {
                 if (!dragMovedRef.current && onCardClick) {
-                  onCardClick(item, index);
+                  e.stopPropagation();
+                  onCardClick(item, index, e);
+                }
+              }}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !dragMovedRef.current && onCardClick) {
+                  e.preventDefault();
+                  onCardClick(item, index, e);
                 }
               }}
             >
