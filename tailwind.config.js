@@ -29,6 +29,12 @@ export default {
       fontFamily: {
         sans: ['Switzer', 'system-ui', 'sans-serif'],
       },
+      screens: {
+        xs: '380px',
+      },
+      backgroundImage: {
+        'gradient-conic': 'conic-gradient(var(--conic-position), var(--tw-gradient-stops))',
+      },
     },
   },
   plugins: [],
