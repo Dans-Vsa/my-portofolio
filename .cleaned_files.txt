@@ -1,9 +1,0 @@
-DELETED:
-src/assets/react.svg
-src/components/GooeyNav.jsx
-src/components/PillNav.jsx
-src/components/ParticlesBackground.jsx
-src/components/LoadingScreen.jsx
-src/components/FAB.jsx
-src/App.css
-public/vite.svg
