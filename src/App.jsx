@@ -231,7 +231,7 @@ function App() {
               <button type="button" aria-label={t.home.aboutMe} onClick={() => handleCardClick(SPIRAL_ITEMS[0])}>
                 <FiUser aria-hidden="true" />
               </button>
-              <a href="mailto:danishbintang75@gmail.com" aria-label={t.home.contactMe}>
+              <a href="mailto:danishbintang80@gmail.com" aria-label={t.home.contactMe}>
                 <FiMessageCircle aria-hidden="true" />
               </a>
             </nav>

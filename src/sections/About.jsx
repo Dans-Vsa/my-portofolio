@@ -22,7 +22,7 @@ import { portfolioData } from '../data/portfolioData';
 
 const FULL_NAME = 'Danish Vesa Bintang Parikesit';
 const NICKNAME = 'Vesa';
-const EMAIL = 'danishbintang75@gmail.com';
+const EMAIL = 'danishbintang80@gmail.com';
 
 const iconButtons = [
   { icon: FiMail, label: 'Email', href: `mailto:${EMAIL}` },

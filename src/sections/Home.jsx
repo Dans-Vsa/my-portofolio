@@ -9,7 +9,7 @@ const ROLES = ['Creative Designer', 'Frontend Developer', 'UI/UX Designer'];
 // else (About/Portfolio/Contact) only exists as previews in the spiral.
 const iconButtons = [
   { icon: FiInstagram, label: 'Instagram', href: 'https://www.instagram.com/dasnhilo/', external: true },
-  { icon: FiMail, label: 'Contact', href: 'mailto:danishbintang75@gmail.com' },
+  { icon: FiMail, label: 'Contact', href: 'mailto:danishbintang80@gmail.com' },
   { icon: FaWhatsapp, label: 'WhatsApp', href: 'https://wa.me/6281382449254', external: true },
   { icon: FiGithub, label: 'GitHub', href: 'https://github.com/Dans-Vsa', external: true },
 ];
