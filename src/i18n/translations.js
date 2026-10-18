@@ -84,6 +84,16 @@ export const translations = {
       composerNote: 'Opens your email app or WhatsApp with the message filled in. Nothing is stored on this site.',
       greeting: (name) => (name ? `Hi Vesa, I'm ${name}.` : 'Hi Vesa,'),
       downloadCv: 'Download CV (PDF)',
+      email: 'Your email',
+      emailPlaceholder: 'So I can reply to you',
+      send: 'Send message',
+      sending: 'Sending…',
+      sentTitle: 'Message sent.',
+      sentBody: "Thanks! It's in my inbox now, and I'll reply to your email soon.",
+      sendAnother: 'Send another message',
+      sendError: "Couldn't send right now. Please try again, or use WhatsApp.",
+      orWhatsApp: 'Prefer chat?',
+      directNote: 'Your message goes straight to my inbox. Your email is only used to reply.',
     },
 
     about: {
@@ -231,6 +241,16 @@ export const translations = {
       composerNote: 'Membuka aplikasi email atau WhatsApp dengan pesan yang sudah terisi. Tidak ada data yang disimpan di situs ini.',
       greeting: (name) => (name ? `Halo Vesa, saya ${name}.` : 'Halo Vesa,'),
       downloadCv: 'Unduh CV (PDF)',
+      email: 'Email kamu',
+      emailPlaceholder: 'Supaya saya bisa membalas',
+      send: 'Kirim pesan',
+      sending: 'Mengirim…',
+      sentTitle: 'Pesan terkirim.',
+      sentBody: 'Terima kasih! Pesanmu sudah masuk ke inbox saya, dan akan segera saya balas ke email kamu.',
+      sendAnother: 'Kirim pesan lain',
+      sendError: 'Pesan belum bisa terkirim. Coba lagi, atau pakai WhatsApp.',
+      orWhatsApp: 'Lebih suka chat?',
+      directNote: 'Pesanmu langsung masuk ke inbox saya. Email kamu hanya dipakai untuk membalas.',
     },
 
     about: {
