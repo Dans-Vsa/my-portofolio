@@ -36,6 +36,18 @@ export const translations = {
       hintEsc: 'Press ESC to go back',
     },
 
+    techStack: {
+      eyebrow: 'Toolkit',
+      title: 'Tech Stack',
+      count: (n) => `${n} tools`,
+      all: 'All',
+      hint: 'Tap a tool to see where I used it',
+      usedIn: 'Used in',
+      notYet: 'Part of my everyday workflow, no public repo to show yet.',
+      close: 'Close',
+      thisPortfolio: 'This portfolio',
+    },
+
     about: {
       eyebrow: 'About me',
       role: 'Frontend Developer & UI/UX Designer',
@@ -82,6 +94,7 @@ export const translations = {
         Language: 'Language',
         Backend: 'Backend',
         Database: 'Database',
+        Game: 'Game Dev',
         Design: 'Design',
         Tools: 'Tools',
       },
@@ -132,6 +145,18 @@ export const translations = {
       hintEsc: 'Tekan ESC untuk kembali',
     },
 
+    techStack: {
+      eyebrow: 'Toolkit',
+      title: 'Tech Stack',
+      count: (n) => `${n} tools`,
+      all: 'Semua',
+      hint: 'Ketuk salah satu untuk melihat di mana saya memakainya',
+      usedIn: 'Dipakai di',
+      notYet: 'Bagian dari alur kerja harian, belum ada repo publik untuk ditunjukkan.',
+      close: 'Tutup',
+      thisPortfolio: 'Portofolio ini',
+    },
+
     about: {
       eyebrow: 'Tentang saya',
       role: 'Frontend Developer & UI/UX Designer',
@@ -178,6 +203,7 @@ export const translations = {
         Language: 'Bahasa',
         Backend: 'Backend',
         Database: 'Database',
+        Game: 'Game Dev',
         Design: 'Desain',
         Tools: 'Tools',
       },

@@ -8,6 +8,7 @@ import MobileCardStage from './components/motion/MobileCardStage';
 import Home, { HomeProfile } from './sections/Home';
 import About from './sections/About';
 import Projects from './sections/Projects';
+import TechStack from './sections/TechStack';
 import PreviewTile from './sections/previews/PreviewTile';
 import { portfolioData } from './data/portfolioData';
 import { playReelClick } from './lib/reelClick';
@@ -146,7 +147,7 @@ function App() {
     if (transitioningBack || isTransitioning) return;
     playReelClick();
 
-    if (item.id === 'about' || item.id === 'projects') {
+    if (item.id === 'about' || item.id === 'projects' || item.id === 'tech-stack') {
       const prefersReducedMotion =
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -193,6 +194,19 @@ function App() {
             }`}
           >
             <Projects onBack={handleBack} isBackTransitioning={!!transitioningBack} />
+          </Motion.div>
+        ) : activeSection === 'tech-stack' ? (
+          <Motion.div
+            key="section-tech-stack"
+            initial={isMobile ? { y: '-100%', x: 0 } : { x: '-100%', y: 0 }}
+            animate={isMobile ? { y: '0%', x: 0 } : { x: '0%', y: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            className={`absolute inset-0 w-full h-full z-20 overflow-hidden ${
+              isMobile ? 'shadow-[0_24px_60px_rgba(0,0,0,0.7)]' : 'shadow-[24px_0_60px_rgba(0,0,0,0.6)]'
+            }`}
+          >
+            <TechStack onBack={handleBack} isBackTransitioning={!!transitioningBack} />
           </Motion.div>
         ) : isMobile ? (
           /* Mobile layout: identity, vertical 3D reel, and profile/contact actions. */

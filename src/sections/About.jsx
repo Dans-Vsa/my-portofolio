@@ -1,24 +1,12 @@
 import { Fragment, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { FiArrowLeft, FiArrowUpRight, FiInstagram, FiMail, FiGithub, FiDownload } from 'react-icons/fi';
-import {
-  FaWhatsapp,
-  FaBootstrap,
-  FaCode,
-  FaDocker,
-  FaFigma,
-  FaGitAlt,
-  FaLaravel,
-  FaNodeJs,
-  FaPhp,
-  FaPython,
-  FaReact,
-} from 'react-icons/fa';
-import { SiJavascript, SiMongodb, SiMysql, SiTailwindcss } from 'react-icons/si';
+import { FaWhatsapp } from 'react-icons/fa';
 import { LampContainer } from '@/components/ui/lamp';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLanguage } from '../i18n/languageContext';
 import { portfolioData } from '../data/portfolioData';
+import { getTechIcon, TECH_CATEGORIES } from '../lib/techIcons';
 
 const FULL_NAME = 'Danish Vesa Bintang Parikesit';
 const NICKNAME = 'Vesa';
@@ -31,27 +19,7 @@ const iconButtons = [
   { icon: FiGithub, label: 'GitHub', href: 'https://github.com/Dans-Vsa', external: true },
 ];
 
-// portfolioData stores icon names as strings; resolve them here.
-const TECH_ICONS = {
-  FaBootstrap,
-  FaCode,
-  FaDocker,
-  FaFigma,
-  FaGitAlt,
-  FaLaravel,
-  FaNodeJs,
-  FaPhp,
-  FaPython,
-  FaReact,
-  SiJavascript,
-  SiMongodb,
-  SiMysql,
-  SiTailwindcss,
-};
-
-const CATEGORY_ORDER = ['Frontend', 'Language', 'Backend', 'Database', 'Design', 'Tools'];
-
-const toolkit = CATEGORY_ORDER.map((category) => ({
+const toolkit = TECH_CATEGORIES.map((category) => ({
   category,
   items: portfolioData.techStack.filter((tech) => tech.category === category),
 })).filter((group) => group.items.length > 0);
@@ -286,7 +254,7 @@ const About = ({ onBack, isBackTransitioning = false }) => {
                 <dt className="text-sm font-medium text-zinc-500 sm:pt-2">{a.categories[group.category]}</dt>
                 <dd className="flex flex-wrap gap-2">
                   {group.items.map((tech) => {
-                    const Icon = TECH_ICONS[tech.icon] ?? FaCode;
+                    const Icon = getTechIcon(tech.icon);
                     return (
                       <span
                         key={tech.id}
