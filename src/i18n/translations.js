@@ -83,7 +83,6 @@ export const translations = {
       educationTitle: 'Education',
       education: [
         { title: 'Digital Technology University of Indonesia', desc: 'University' },
-        { title: 'SMK Taruna Bhakti Cikarang', desc: 'Vocational High School' },
       ],
       outroTitle: "Let's build something together.",
       outroBody:
@@ -175,7 +174,6 @@ export const translations = {
       educationTitle: 'Pendidikan',
       education: [
         { title: 'Universitas Teknologi Digital Indonesia', desc: 'Universitas' },
-        { title: 'SMK Taruna Bhakti Cikarang', desc: 'Sekolah Menengah Kejuruan' },
       ],
       outroTitle: 'Yuk, bangun sesuatu bersama.',
       outroBody:

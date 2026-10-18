@@ -197,40 +197,32 @@ const About = ({ onBack, isBackTransitioning = false }) => {
       </section>
 
       <div className="max-w-5xl mx-auto px-5 sm:px-10 lg:px-12 pb-24 sm:pb-36 flex flex-col gap-20 sm:gap-28">
-        {/* 2. Intro: portrait + quick facts, statement + bio + stats */}
+        {/* 2. Intro: quick facts, statement + bio + stats */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-14 border-t border-zinc-800 pt-12 sm:pt-16">
-          <Motion.aside {...reveal()} className="md:col-span-5 md:sticky md:top-24 self-start">
-            <figure className="group relative overflow-hidden rounded-card bg-zinc-900 aspect-[4/5] max-w-sm mx-auto md:max-w-none">
-              <img
-                src="/profile.jpg"
-                alt={FULL_NAME}
-                loading="lazy"
-                className="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ease-out"
-              />
-              <figcaption className="absolute left-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-black/70 backdrop-blur px-3 py-1.5 text-xs font-medium text-white">
-                <span className="relative flex w-2 h-2">
-                  <span className="absolute inline-flex w-full h-full rounded-full bg-white opacity-60 animate-ping" />
-                  <span className="relative inline-flex w-2 h-2 rounded-full bg-white" />
-                </span>
-                {a.facts.statusValue}
-              </figcaption>
-            </figure>
-
-            <dl className="mt-6 max-w-sm mx-auto md:max-w-none divide-y divide-zinc-800 border-y border-zinc-800 text-sm">
+          <Motion.aside {...reveal()} className="md:col-span-4 md:sticky md:top-24 self-start">
+            <dl className="divide-y divide-zinc-800 border-y border-zinc-800 text-sm sm:text-base">
               {[
                 [a.facts.based, a.facts.basedValue],
                 [a.facts.focus, a.facts.focusValue],
-                [a.facts.status, a.facts.statusValue],
-              ].map(([term, value]) => (
-                <div key={term} className="flex items-center justify-between gap-4 py-3">
+                [a.facts.status, a.facts.statusValue, true],
+              ].map(([term, value, live]) => (
+                <div key={term} className="flex items-center justify-between gap-4 py-4">
                   <dt className="text-zinc-500">{term}</dt>
-                  <dd className="font-medium text-white text-right">{value}</dd>
+                  <dd className="inline-flex items-center gap-2 font-medium text-white text-right">
+                    {live && (
+                      <span className="relative flex w-2 h-2" aria-hidden="true">
+                        <span className="absolute inline-flex w-full h-full rounded-full bg-white opacity-60 animate-ping" />
+                        <span className="relative inline-flex w-2 h-2 rounded-full bg-white" />
+                      </span>
+                    )}
+                    {value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </Motion.aside>
 
-          <div className="md:col-span-7 flex flex-col gap-10 sm:gap-12">
+          <div className="md:col-span-8 flex flex-col gap-10 sm:gap-12">
             <Motion.p
               {...reveal(0.05)}
               className="text-2xl sm:text-3xl md:text-4xl font-normal leading-snug sm:leading-[1.25] text-zinc-400 tracking-tight"
