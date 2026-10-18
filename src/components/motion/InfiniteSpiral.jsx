@@ -33,6 +33,9 @@ const InfiniteSpiral = ({
   onStep,
   onCardClick,
   stepsPerCard = 4,
+  // Idle drift: cards per second the spiral moves on its own after `idleDelay` ms without input (0 = off).
+  idleSpeed = 0,
+  idleDelay = 2500,
   hiddenCardId = null,
   className = '',
 }) => {
@@ -51,6 +54,7 @@ const InfiniteSpiral = ({
   const dragMovedRef = useRef(false);
   const lastActiveIndexRef = useRef(-1);
   const lastStepRef = useRef(null);
+  const lastInteractionRef = useRef(0);
 
   useEffect(() => {
     hiddenCardIdRef.current = hiddenCardId;
@@ -63,6 +67,10 @@ const InfiniteSpiral = ({
     let frameId;
     let previousTime = performance.now();
     let bounds = root.getBoundingClientRect();
+    lastInteractionRef.current = performance.now();
+    const markInteraction = () => {
+      lastInteractionRef.current = performance.now();
+    };
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const scrollEnabled = animationMode === 'scroll' || animationMode === 'all';
     const scrollSpeedMultiplier = Math.max(speed, 0) / 0.55;
@@ -83,6 +91,7 @@ const InfiniteSpiral = ({
     // Direct wheel handler
     const handleWheel = (e) => {
       if (!scrollEnabled || !visibleRef.current) return;
+      markInteraction();
       let delta = e.deltaY;
       if (e.deltaMode === 1) delta *= 32;
       else if (e.deltaMode === 2) delta *= 100;
@@ -95,11 +104,13 @@ const InfiniteSpiral = ({
     let touchLastY = 0;
     const handleTouchStart = (e) => {
       if (!scrollEnabled || e.touches.length === 0) return;
+      markInteraction();
       touchLastY = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
       if (!scrollEnabled || e.touches.length === 0) return;
+      markInteraction();
       const currentY = e.touches[0].clientY;
       const deltaY = touchLastY - currentY;
       touchLastY = currentY;
@@ -118,11 +129,12 @@ const InfiniteSpiral = ({
       const autoEnabled = animationMode === 'auto';
       const motionPaused = draggingRef.current || (pauseOnHover && hoveredRef.current);
       const directionMultiplier = direction === 'down' ? -1 : 1;
+      const idle = idleSpeed > 0 && !autoEnabled && !draggingRef.current && time - lastInteractionRef.current > idleDelay;
+      const cruiseSpeed = autoEnabled ? speed * directionMultiplier : idle ? idleSpeed : 0;
       const desiredAutoSpeed =
-        autoEnabled && visibleRef.current && !reducedMotion.matches && !motionPaused
-          ? speed * directionMultiplier
-          : 0;
-      const speedBlend = 1 - Math.exp(-delta * 7);
+        visibleRef.current && !reducedMotion.matches && !motionPaused ? cruiseSpeed : 0;
+      // Idle drift eases in and out slowly; scripted auto mode keeps its snappier blend.
+      const speedBlend = 1 - Math.exp(-delta * (autoEnabled ? 7 : 1.4));
       autoSpeedRef.current += (desiredAutoSpeed - autoSpeedRef.current) * speedBlend;
       targetProgressRef.current += autoSpeedRef.current * delta;
 
@@ -172,7 +184,8 @@ const InfiniteSpiral = ({
       });
 
       if (onActiveIndexChange) {
-        const activeIndex = Math.round(modulo(progressRef.current, count));
+        // Round first, then wrap: wrapping first can round 4.6 of 5 cards up to 5, an index that does not exist.
+        const activeIndex = modulo(Math.round(progressRef.current), count);
         if (activeIndex !== lastActiveIndexRef.current) {
           lastActiveIndexRef.current = activeIndex;
           onActiveIndexChange(activeIndex);
@@ -184,7 +197,8 @@ const InfiniteSpiral = ({
         if (lastStepRef.current === null) {
           lastStepRef.current = stepIndex;
         } else if (stepIndex !== lastStepRef.current) {
-          if (Math.abs(stepIndex - lastStepRef.current) < 8) {
+          // Only tick for user-driven motion; the idle drift stays silent.
+          if (Math.abs(stepIndex - lastStepRef.current) < 8 && !idle) {
             onStep();
           }
           lastStepRef.current = stepIndex;
@@ -223,6 +237,8 @@ const InfiniteSpiral = ({
     pauseOnHover,
     onActiveIndexChange,
     onStep,
+    idleSpeed,
+    idleDelay,
     stepsPerCard,
   ]);
 
@@ -264,6 +280,7 @@ const InfiniteSpiral = ({
         lastPointerYRef.current = event.clientY;
         dragMovedRef.current = false;
         draggingRef.current = false;
+        lastInteractionRef.current = performance.now();
         targetProgressRef.current = progressRef.current;
       }}
       onPointerMove={(event) => {

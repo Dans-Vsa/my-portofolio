@@ -227,6 +227,7 @@ function App() {
                 onChange={setActiveIndex}
                 onStep={playReelClick}
                 onCardClick={handleCardClick}
+                idleInterval={4500}
               />
             </div>
 
@@ -301,6 +302,8 @@ function App() {
                   onStep={playReelClick}
                   onCardClick={handleCardClick}
                   stepsPerCard={4}
+                  idleSpeed={0.22}
+                  idleDelay={2500}
                 />
               </div>
 

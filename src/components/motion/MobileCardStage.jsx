@@ -40,13 +40,16 @@ function ReelCard({ item, index, count, position, travel, active, onOpen }) {
   );
 }
 
-const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCardClick }) => {
+// `idleInterval` (ms): advance one card on its own this often while the visitor isn't touching the reel (0 = off).
+const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCardClick, idleInterval = 0 }) => {
   const stageRef = useRef(null);
   const gesture = useRef(null);
   const suppressClick = useRef(false);
   const snapTimer = useRef(null);
   const emittedIndex = useRef(activeIndex);
   const callbacks = useRef({ onChange, onStep });
+  const lastInteraction = useRef(0);
+  const autoStepping = useRef(false);
   const reducedMotion = useReducedMotion();
   const target = useMotionValue(activeIndex);
   const spring = useSpring(target, { stiffness: 230, damping: 30, mass: 0.8 });
@@ -69,7 +72,7 @@ const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCard
       if (next !== emittedIndex.current) {
         emittedIndex.current = next;
         callbacks.current.onChange?.(next);
-        callbacks.current.onStep?.();
+        if (!autoStepping.current) callbacks.current.onStep?.();
       }
     });
   }, [position, count]);
@@ -84,11 +87,29 @@ const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCard
     target.set(nearest);
   }, [activeIndex, count, target]);
 
+  // Idle auto-advance: silent, paused while a gesture is in progress or with reduced motion.
+  useEffect(() => {
+    if (!idleInterval || !count || reducedMotion) return;
+    lastInteraction.current = performance.now();
+    const id = setInterval(() => {
+      if (gesture.current || document.hidden) return;
+      if (performance.now() - lastInteraction.current < idleInterval) return;
+      autoStepping.current = true;
+      target.set(Math.round(target.get()) + 1);
+      lastInteraction.current = performance.now();
+      setTimeout(() => {
+        autoStepping.current = false;
+      }, 900);
+    }, 500);
+    return () => clearInterval(id);
+  }, [idleInterval, count, reducedMotion, target]);
+
   useEffect(() => {
     const stage = stageRef.current;
     const onWheel = event => {
       event.preventDefault();
       if (!count) return;
+      lastInteraction.current = performance.now();
       clearTimeout(snapTimer.current);
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
       const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -125,6 +146,7 @@ const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCard
       aria-label="Portfolio sections"
       onPointerDown={event => {
         if (!event.isPrimary || event.button !== 0) return;
+        lastInteraction.current = performance.now();
         clearTimeout(snapTimer.current);
         suppressClick.current = false;
         gesture.current = { id: event.pointerId, y: event.clientY, position: target.get(), time: performance.now() };
@@ -144,6 +166,7 @@ const MobileCardStage = ({ items = [], activeIndex = 0, onChange, onStep, onCard
       onKeyDown={event => {
         if (!count || !['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'].includes(event.key)) return;
         event.preventDefault();
+        lastInteraction.current = performance.now();
         clearTimeout(snapTimer.current);
         target.set(Math.round(target.get()) + (['ArrowDown', 'ArrowRight'].includes(event.key) ? 1 : -1));
       }}
