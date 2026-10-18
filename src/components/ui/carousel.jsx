@@ -1,8 +1,50 @@
 "use client";
-import { IconArrowNarrowRight } from "@tabler/icons-react";
+import { IconArrowNarrowRight, IconArrowUpRight, IconBrandGithub } from "@tabler/icons-react";
 import { useState, useRef, useId, useEffect } from "react";
 
-const Slide = ({ slide, index, current, handleSlideClick }) => {
+// Recordings open on a loading screen; skip it and loop from here instead.
+const DEMO_START = 1.5;
+
+const SLIDE_SIZE =
+  "w-[80vmin] h-[100vmin] sm:w-[56vmin] sm:h-[62vmin] md:w-[52vmin] md:h-[58vmin] sm:max-w-[480px] sm:max-h-[530px]";
+
+// Muted looping demo. Only the active slide loads and plays; the rest show the poster.
+const DemoVideo = ({ src, poster, title, active }) => {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (active && !reduceMotion) {
+      if (video.currentTime < DEMO_START) video.currentTime = DEMO_START;
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [active]);
+
+  const restart = (e) => {
+    e.currentTarget.currentTime = DEMO_START;
+    e.currentTarget.play().catch(() => {});
+  };
+
+  return (
+    <video
+      ref={videoRef}
+      className="absolute inset-0 w-full h-full object-cover"
+      src={src}
+      poster={poster}
+      muted
+      playsInline
+      preload={active ? "auto" : "none"}
+      onEnded={restart}
+      aria-label={title}
+    />
+  );
+};
+
+const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
   const slideRef = useRef(null);
 
   const xRef = useRef(0);
@@ -45,96 +87,80 @@ const Slide = ({ slide, index, current, handleSlideClick }) => {
     yRef.current = 0;
   };
 
-  const imageLoaded = (event) => {
-    event.currentTarget.style.opacity = "1";
-  };
-
-  const { src, button, title, description, tags, link } = slide;
+  const { title, description, kindLabel, tags, video, poster, primary, secondary } = slide;
+  const isActive = current === index;
 
   return (
     <div className="[perspective:1200px] [transform-style:preserve-3d]">
       <li
         ref={slideRef}
-        className="flex flex-1 flex-col items-center justify-center relative text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[75vmin] h-[75vmin] sm:w-[54vmin] sm:h-[54vmin] md:w-[50vmin] md:h-[50vmin] sm:max-w-[480px] sm:max-h-[480px] mx-[3.5vmin] sm:mx-[4vmin] z-10 cursor-pointer"
+        className={`relative flex flex-col ${SLIDE_SIZE} mx-[3vmin] sm:mx-[4vmin] z-10 cursor-pointer`}
         onClick={() => handleSlideClick(index)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          transform:
-            current !== index
-              ? "scale(0.96) rotateX(8deg)"
-              : "scale(1) rotateX(0deg)",
+          transform: isActive ? "scale(1) rotateX(0deg)" : "scale(0.94) rotateX(8deg)",
           transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
           transformOrigin: "bottom",
         }}
       >
         <div
-          className="absolute top-0 left-0 w-full h-full bg-[#181924] rounded-lg sm:rounded-xl overflow-hidden transition-all duration-150 ease-out shadow-2xl"
+          className={`absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-zinc-950 text-white shadow-2xl transition-opacity duration-500 ${
+            isActive ? "opacity-100" : "opacity-50"
+          }`}
           style={{
-            transform:
-              current === index
-                ? "translate3d(calc(var(--x) / 30), calc(var(--y) / 30), 0)"
-                : "none",
+            transform: isActive ? "translate3d(calc(var(--x) / 40), calc(var(--y) / 40), 0)" : "none",
           }}
         >
-          <img
-            className="absolute inset-0 w-[120%] h-[120%] object-cover opacity-100 transition-opacity duration-600 ease-in-out"
-            style={{
-              opacity: current === index ? 1 : 0.45,
-            }}
-            alt={title}
-            src={src}
-            onLoad={imageLoaded}
-            loading="eager"
-            decoding="sync"
-          />
-          {current === index && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 transition-all duration-1000" />
-          )}
-        </div>
+          {/* Demo */}
+          <div className="relative w-full aspect-video shrink-0 bg-zinc-900 overflow-hidden">
+            <DemoVideo src={video} poster={poster} title={title} active={isActive} />
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]">
+              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-red-500 animate-pulse" : "bg-zinc-500"}`} />
+              {demoLabel}
+            </span>
+          </div>
 
-        <article
-          className={`relative p-[3vmin] sm:p-[4vmin] flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out z-20 ${
-            current === index ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
-          }`}
-        >
-          {tags && tags.length > 0 && (
-            <p className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] font-medium text-zinc-300 drop-shadow-sm mb-1">
-              {tags.join(' • ')}
+          {/* Info */}
+          <article
+            className={`flex flex-1 min-h-0 flex-col gap-1.5 sm:gap-2 p-4 sm:p-5 text-left transition-opacity duration-500 ${
+              isActive ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-semibold text-zinc-500 truncate">
+              {kindLabel} · {tags.join(" · ")}
             </p>
-          )}
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight leading-tight">{title}</h2>
+            <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed line-clamp-3">{description}</p>
 
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-md">
-            {title}
-          </h2>
-
-          {description && (
-            <p className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-zinc-200/90 max-w-xs sm:max-w-sm mx-auto line-clamp-2 drop-shadow-sm font-normal leading-relaxed">
-              {description}
-            </p>
-          )}
-
-          <div className="flex justify-center mt-3 sm:mt-4">
-            {link ? (
+            <div className="mt-auto flex items-center gap-2 pt-2">
               <a
-                href={link}
+                href={primary.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                tabIndex={isActive ? 0 : -1}
                 onClick={(e) => e.stopPropagation()}
-                className="px-4 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-xs font-medium text-black bg-white hover:bg-zinc-100 rounded-lg shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer inline-flex items-center gap-1.5"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-zinc-200 active:scale-95 transition-all"
               >
-                <span>{button || "Explore Project"}</span>
+                {primary.label}
+                <IconArrowUpRight size={14} />
               </a>
-            ) : (
-              <button
-                type="button"
-                className="px-4 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-xs font-medium text-black bg-white hover:bg-zinc-100 rounded-lg shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer inline-flex items-center gap-1.5"
-              >
-                <span>{button || "Explore Project"}</span>
-              </button>
-            )}
-          </div>
-        </article>
+              {secondary && (
+                <a
+                  href={secondary.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 px-4 py-2 text-xs font-semibold text-white hover:border-white active:scale-95 transition-all"
+                >
+                  <IconBrandGithub size={14} />
+                  {secondary.label}
+                </a>
+              )}
+            </div>
+          </article>
+        </div>
       </li>
     </div>
   );
@@ -156,7 +182,7 @@ const CarouselControl = ({ type, title, handleClick }) => {
   );
 };
 
-export default function Carousel({ slides = [] }) {
+export default function Carousel({ slides = [], demoLabel = "Demo" }) {
   const [current, setCurrent] = useState(0);
   const touchStartX = useRef(0);
 
@@ -195,13 +221,13 @@ export default function Carousel({ slides = [] }) {
 
   return (
     <div
-      className="relative w-[75vmin] h-[75vmin] sm:w-[54vmin] sm:h-[54vmin] md:w-[50vmin] md:h-[50vmin] sm:max-w-[480px] sm:max-h-[480px] mx-auto select-none"
+      className={`relative ${SLIDE_SIZE} mx-auto select-none`}
       aria-labelledby={`carousel-heading-${id}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <ul
-        className="absolute flex mx-[-3.5vmin] sm:mx-[-4vmin] transition-transform duration-700 ease-out"
+        className="absolute flex mx-[-3vmin] sm:mx-[-4vmin] transition-transform duration-700 ease-out"
         style={{
           transform: `translateX(-${current * (100 / slides.length)}%)`,
         }}
@@ -213,6 +239,7 @@ export default function Carousel({ slides = [] }) {
             index={index}
             current={current}
             handleSlideClick={handleSlideClick}
+            demoLabel={demoLabel}
           />
         ))}
       </ul>

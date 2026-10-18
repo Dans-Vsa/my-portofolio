@@ -7,15 +7,20 @@ import LanguageToggle from '../components/LanguageToggle';
 import { useLanguage } from '../i18n/languageContext';
 
 const Projects = ({ onBack, isBackTransitioning = false }) => {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   // Map projects from portfolioData to carousel slide format
   const projectSlides = portfolioData.projects.map((project) => ({
+    id: project.id,
     title: project.title,
-    description: project.description,
-    button: t.projects.viewProject,
-    src: project.image,
+    description: project.description[lang],
+    kindLabel: t.projects.kinds[project.kind],
     tags: project.tags,
-    link: project.githubLink !== '#' ? project.githubLink : project.liveLink,
+    video: project.video,
+    poster: project.poster,
+    primary: project.liveLink
+      ? { href: project.liveLink, label: project.kind === 'game' ? t.projects.play : t.projects.visit }
+      : { href: project.githubLink, label: t.projects.viewCode },
+    secondary: project.liveLink ? { href: project.githubLink, label: t.projects.code } : null,
   }));
 
   return (
@@ -37,7 +42,8 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
         {/* Section Heading */}
         <div className="text-center">
           <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-            {t.projects.eyebrow} · {t.projects.builds(projectSlides.length)}
+            {t.projects.eyebrow}
+            <span className="hidden sm:inline"> · {t.projects.builds(projectSlides.length)}</span>
           </span>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">
             {t.projects.title}
@@ -49,7 +55,7 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
 
       {/* Center Main Stage: 3D Carousel */}
       <div className="relative flex-1 w-full flex items-center justify-center min-h-0 my-auto overflow-visible z-20">
-        <Carousel slides={projectSlides} />
+        <Carousel slides={projectSlides} demoLabel={t.projects.demo} />
       </div>
 
       {/* Bottom Hint */}
