@@ -1,331 +1,231 @@
-import { motion } from 'framer-motion';
-import { useState, useRef } from 'react';
-import { useInView } from 'framer-motion';
-import { 
-  FaEnvelope, 
-  FaWhatsapp, 
-  FaGithub, 
-  FaInstagram,
-  FaPaperPlane 
-} from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { motion as Motion } from 'framer-motion';
+import { FiArrowUpRight, FiCheck, FiCopy, FiDownload, FiGithub, FiInstagram, FiMail, FiSend } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
+import SectionHeader from '../components/SectionHeader';
+import { useLanguage } from '../i18n/languageContext';
 
-const Contact = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+const EMAIL = 'danishbintang80@gmail.com';
+const WHATSAPP = '6281382449254';
+const EASE = [0.22, 1, 0.36, 1];
+const TOPIC_IDS = ['freelance', 'fulltime', 'collab', 'other'];
 
-  // ============================================
-  // FORM STATE
-  // ============================================
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
+const channels = [
+  { id: 'email', icon: FiMail, label: 'Email', value: EMAIL, href: `mailto:${EMAIL}`, copy: EMAIL },
+  { id: 'whatsapp', icon: FaWhatsapp, label: 'WhatsApp', value: '+62 813 8244 9254', href: `https://wa.me/${WHATSAPP}`, external: true },
+  { id: 'instagram', icon: FiInstagram, label: 'Instagram', value: '@dasnhilo', href: 'https://www.instagram.com/dasnhilo/', external: true },
+  { id: 'github', icon: FiGithub, label: 'GitHub', value: 'Dans-Vsa', href: 'https://github.com/Dans-Vsa', external: true },
+];
 
-  const [formStatus, setFormStatus] = useState('');
+const reveal = (delay = 0) => ({
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, delay, ease: EASE },
+});
 
-  // ============================================
-  // CONTACT INFO - Ganti dengan info Anda
-  // ============================================
-  const contactInfo = [
-    {
-      icon: FaEnvelope,
-      label: 'Email',
-      value: 'danishbintang80@gmail.com',
-      link: 'mailto:danishbintang80@gmail.com',
-    },
-    {
-      icon: FaWhatsapp,
-      label: 'WhatsApp',
-      value: '+62 813 8244 9254',
-      link: 'https://wa.me/6281382449254',
-    },
-  ];
+// Live clock for Western Indonesia Time; ticks once a minute.
+const useJakartaTime = (locale) => {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Jakarta',
+    hour: '2-digit',
+    minute: '2-digit',
+    weekday: 'long',
+  }).format(now);
+};
 
-  // ============================================
-  // SOCIAL MEDIA - Ganti dengan link Anda
-  // ============================================
-  const socialMedia = [
-    {
-      icon: FaGithub,
-      name: 'GitHub',
-      link: 'https://github.com/Dans-Vsa',
-      color: 'hover:text-gray-900',
-    },
-    {
-      icon: FaInstagram,
-      name: 'Instagram',
-      link: 'https://www.instagram.com/dasnhilo/',
-      color: 'hover:text-pink-600',
-    },
-  ];
+const Contact = ({ onBack, isBackTransitioning = false }) => {
+  const { t } = useLanguage();
+  const ct = t.contact;
+  const time = useJakartaTime(t.certificates.locale);
+  const [copied, setCopied] = useState(false);
+  const [name, setName] = useState('');
+  const [topic, setTopic] = useState('freelance');
+  const [message, setMessage] = useState('');
 
-  // ============================================
-  // HANDLE FORM CHANGE
-  // ============================================
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // ============================================
-  // HANDLE FORM SUBMIT
-  // ============================================
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.message) {
-      setFormStatus('Please fill in all fields');
-      return;
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      window.location.href = `mailto:${EMAIL}`;
     }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setFormStatus('Please enter a valid email');
-      return;
-    }
-
-    // TODO: Integrate with backend or email service
-    // For now, just show success message
-    setFormStatus('Message sent successfully! 🎉');
-    
-    // Reset form
-    setFormData({ name: '', email: '', message: '' });
-
-    // Clear status after 3 seconds
-    setTimeout(() => setFormStatus(''), 3000);
   };
 
-  // ============================================
-  // ANIMATION VARIANTS
-  // ============================================
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6 },
-    },
-  };
+  // Compose the note client-side; it only leaves the page through the visitor's own mail app or WhatsApp.
+  const subject = `${ct.topics[topic]}${name.trim() ? ` · ${name.trim()}` : ''}`;
+  const body = `${ct.greeting(name.trim())}\n\n${message.trim()}`;
+  const mailHref = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const waHref = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`[${ct.topics[topic]}]\n${body}`)}`;
+  const canSend = message.trim().length > 0;
 
   return (
-    <section
-      id="contact"
-      ref={ref}
-      className="py-20 bg-transparent"
-    >
-      <motion.div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white/90 backdrop-blur-md rounded-3xl p-8 sm:p-12 shadow-2xl"
-        variants={containerVariants}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-      >
-        {/* ============================================
-            SECTION TITLE
-            ============================================ */}
-        <motion.div variants={itemVariants} className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Get In Touch
-          </h2>
-          <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full mb-4"></div>
-          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-            Have a question or want to work together? Feel free to reach out!
-          </p>
-        </motion.div>
+    <section className="h-full w-full bg-white text-zinc-900 relative overflow-hidden flex flex-col">
+      <SectionHeader
+        onBack={onBack}
+        isBackTransitioning={isBackTransitioning}
+        eyebrow={ct.available}
+        title={ct.eyebrow}
+      />
 
-        <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
-          
-          {/* ============================================
-              LEFT SIDE - CONTACT INFO & SOCIAL
-              ============================================ */}
-          <motion.div variants={itemVariants} className="space-y-8">
-            
-            {/* Contact Info Cards */}
-            <div className="space-y-3 sm:space-y-4">
-              {contactInfo.map((info, index) => (
-                <motion.a
-                  key={index}
-                  href={info.link}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all"
-                >
-                  <div className="p-3 sm:p-4 bg-blue-100 rounded-lg flex-shrink-0">
-                    <info.icon size={20} className="text-blue-600 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                      {info.label}
-                    </p>
-                    <p className="text-sm sm:text-lg text-gray-900 font-semibold truncate">
-                      {info.value}
-                    </p>
-                  </div>
-                </motion.a>
-              ))}
-            </div>
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain no-scrollbar">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
+          {/* Left: intro + channels */}
+          <div className="flex flex-col gap-8">
+            <Motion.div {...reveal()} className="flex flex-col gap-4">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-zinc-700">
+                <span className="relative flex w-2 h-2" aria-hidden="true">
+                  <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-500" />
+                </span>
+                {ct.available}
+              </span>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.02]">{ct.title}</h2>
+              <p className="text-base sm:text-lg text-zinc-500 leading-relaxed max-w-md">{ct.lead}</p>
+              <p className="text-sm text-zinc-500">
+                {ct.localTime}: <span className="font-semibold text-zinc-900 tabular-nums">{time} WIB</span>
+              </p>
+            </Motion.div>
 
-            {/* Social Media */}
-            <motion.div variants={itemVariants}>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
-                Connect With Me
-              </h3>
-              <div className="flex gap-3 sm:gap-4">
-                {socialMedia.map((social, index) => (
-                  <motion.a
-                    key={index}
-                    href={social.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.2, rotate: 5 }}
-                    className={`p-3 sm:p-4 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-all text-gray-600 ${social.color}`}
-                    aria-label={social.name}
-                  >
-                    <social.icon size={24} className="sm:w-7 sm:h-7" />
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
+            <Motion.div {...reveal(0.08)}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">{ct.channels}</h3>
+              <ul className="mt-3 divide-y divide-border border-y border-border">
+                {channels.map((ch) => {
+                  const Icon = ch.icon;
+                  return (
+                    <li key={ch.id} className="flex items-center gap-3 py-3.5">
+                      <span className="w-10 h-10 shrink-0 rounded-btn bg-bg flex items-center justify-center text-zinc-800">
+                        <Icon size={18} aria-hidden="true" />
+                      </span>
+                      <a
+                        href={ch.href}
+                        target={ch.external ? '_blank' : undefined}
+                        rel={ch.external ? 'noopener noreferrer' : undefined}
+                        className="group flex-1 min-w-0"
+                      >
+                        <span className="block text-xs text-zinc-500">{ch.label}</span>
+                        <span className="flex items-center gap-1 text-sm sm:text-base font-medium truncate group-hover:underline underline-offset-4">
+                          {ch.value}
+                          <FiArrowUpRight size={15} className="shrink-0 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
+                        </span>
+                      </a>
+                      {ch.copy && (
+                        <button
+                          type="button"
+                          onClick={copyEmail}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-zinc-900 cursor-pointer transition-colors"
+                          aria-live="polite"
+                        >
+                          {copied ? <FiCheck size={13} /> : <FiCopy size={13} />}
+                          {copied ? ct.copied : ct.copy}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Motion.div>
 
-            {/* Decorative Element */}
-            <motion.div
-              variants={itemVariants}
-              className="relative p-6 sm:p-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl text-white"
+            <Motion.a
+              {...reveal(0.14)}
+              href="/cv-vesa.pdf"
+              download="Danish_Vesa_CV.pdf"
+              className="inline-flex w-fit items-center gap-2 rounded-btn border border-zinc-900 px-5 py-3 text-sm font-semibold hover:bg-zinc-900 hover:text-white transition-colors"
             >
-              <div className="relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold mb-2">Let's Work Together</h3>
-                <p className="text-sm sm:text-base text-blue-100">
-                  I'm always open to discussing new projects, creative ideas, or opportunities to 
-                  create amazing user experiences.
-                </p>
-              </div>
-              <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full blur-3xl"></div>
-            </motion.div>
-          </motion.div>
+              <FiDownload size={16} />
+              {ct.downloadCv}
+            </Motion.a>
+          </div>
 
-          {/* ============================================
-              RIGHT SIDE - CONTACT FORM
-              ============================================ */}
-          <motion.div variants={itemVariants}>
-            <form
-              onSubmit={handleSubmit}
-              className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-4 sm:space-y-6"
-            >
-              {/* Name Input */}
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2"
-                >
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className="w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                />
-              </div>
+          {/* Right: quick message composer */}
+          <Motion.form
+            {...reveal(0.1)}
+            onSubmit={(e) => e.preventDefault()}
+            className="self-start rounded-card bg-bg p-5 sm:p-7 flex flex-col gap-5"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">{ct.composer}</h3>
 
-              {/* Email Input */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2"
-                >
-                  Your Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="john@example.com"
-                  className="w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                />
-              </div>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">{ct.name}</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={ct.namePlaceholder}
+                maxLength={60}
+                className="h-11 rounded-btn border border-border bg-white px-4 text-sm outline-none focus:border-zinc-900 transition-colors"
+              />
+            </label>
 
-              {/* Message Input */}
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2"
-                >
-                  Your Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Tell me about your project..."
-                  rows="5"
-                  className="w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
-                />
+            <fieldset className="flex flex-col gap-2">
+              <legend className="text-sm font-medium mb-1.5">{ct.topic}</legend>
+              <div className="flex flex-wrap gap-2">
+                {TOPIC_IDS.map((id) => {
+                  const isActive = id === topic;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => setTopic(id)}
+                      className={`h-9 px-3.5 rounded-full border text-xs sm:text-sm font-medium cursor-pointer transition-colors ${
+                        isActive ? 'bg-zinc-900 border-zinc-900 text-white' : 'bg-white border-border text-zinc-600 hover:border-zinc-400'
+                      }`}
+                    >
+                      {ct.topics[id]}
+                    </button>
+                  );
+                })}
               </div>
+            </fieldset>
 
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">{ct.message}</span>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={ct.messagePlaceholder}
+                rows={5}
+                maxLength={1500}
+                className="rounded-btn border border-border bg-white px-4 py-3 text-sm leading-relaxed outline-none focus:border-zinc-900 transition-colors resize-none"
+              />
+            </label>
+
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <a
+                href={canSend ? mailHref : undefined}
+                aria-disabled={!canSend}
+                className={`flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-btn text-sm font-semibold transition-all ${
+                  canSend ? 'bg-zinc-900 text-white hover:bg-black active:scale-[0.98]' : 'bg-zinc-200 text-zinc-400 pointer-events-none'
+                }`}
               >
-                <span>Send Message</span>
-                <FaPaperPlane />
-              </motion.button>
-
-              {/* Form Status Message */}
-              {formStatus && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`text-center p-4 rounded-lg ${
-                    formStatus.includes('successfully')
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {formStatus}
-                </motion.div>
-              )}
-            </form>
-          </motion.div>
+                <FiSend size={15} />
+                {ct.sendEmail}
+              </a>
+              <a
+                href={canSend ? waHref : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-disabled={!canSend}
+                className={`flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-btn border text-sm font-semibold transition-all ${
+                  canSend ? 'border-zinc-900 text-zinc-900 hover:bg-white active:scale-[0.98]' : 'border-zinc-200 text-zinc-400 pointer-events-none'
+                }`}
+              >
+                <FaWhatsapp size={16} />
+                {ct.sendWhatsApp}
+              </a>
+            </div>
+            <p className="text-xs text-zinc-500 leading-relaxed">{ct.composerNote}</p>
+          </Motion.form>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };
 
 export default Contact;
-
-// ============================================
-// CARA CUSTOMIZE:
-// ============================================
-// 1. Ganti email & phone (line 37, 43)
-// 2. Ganti social media links (line 55-67)
-// 3. Untuk integrasi backend:
-//    - Uncomment line 105
-//    - Tambahkan fetch/axios ke API endpoint
-//    - Contoh: fetch('/api/contact', { method: 'POST', body: JSON.stringify(formData) })
-// 4. Tambah social media:
-//    - Import icon dari react-icons
-//    - Tambahkan ke array socialMedia
-// 5. Ubah warna gradient (line 159, 243, 359)
-// ============================================

@@ -9,11 +9,22 @@ import Home, { HomeProfile } from './sections/Home';
 import About from './sections/About';
 import Projects from './sections/Projects';
 import TechStack from './sections/TechStack';
+import Certificates from './sections/Certificates';
+import Contact from './sections/Contact';
 import PreviewTile from './sections/previews/PreviewTile';
 import { portfolioData } from './data/portfolioData';
 import { playReelClick } from './lib/reelClick';
 import LanguageToggle from './components/LanguageToggle';
 import { useLanguage } from './i18n/languageContext';
+
+// Spiral card id -> full-screen section it opens.
+const SECTIONS = {
+  about: About,
+  projects: Projects,
+  'tech-stack': TechStack,
+  certificates: Certificates,
+  contact: Contact,
+};
 
 const buildSpiralItems = (cards) => [
   {
@@ -63,9 +74,13 @@ const buildSpiralItems = (cards) => [
 
 function App() {
   const { t } = useLanguage();
-  const SPIRAL_ITEMS = useMemo(() => buildSpiralItems(t.cards), [t]);
+  const SPIRAL_ITEMS = useMemo(
+    () => buildSpiralItems(t.cards).map((item) => ({ ...item, openLabel: `${t.home.goTo} ${item.label}` })),
+    [t],
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(null);
+  const ActiveSection = activeSection ? SECTIONS[activeSection] : null;
   const [transitioningBack, setTransitioningBack] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false));
@@ -147,7 +162,7 @@ function App() {
     if (transitioningBack || isTransitioning) return;
     playReelClick();
 
-    if (item.id === 'about' || item.id === 'projects' || item.id === 'tech-stack') {
+    if (SECTIONS[item.id]) {
       const prefersReducedMotion =
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -169,9 +184,9 @@ function App() {
   return (
     <main className="App bg-bg text-text h-screen w-full overflow-hidden select-none relative">
       <AnimatePresence>
-        {activeSection === 'about' ? (
+        {ActiveSection ? (
           <Motion.div
-            key="section-about"
+            key={`section-${activeSection}`}
             initial={isMobile ? { y: '-100%', x: 0 } : { x: '-100%', y: 0 }}
             animate={isMobile ? { y: '0%', x: 0 } : { x: '0%', y: 0 }}
             exit={{ opacity: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } }}
@@ -180,33 +195,7 @@ function App() {
               isMobile ? 'shadow-[0_24px_60px_rgba(0,0,0,0.7)]' : 'shadow-[24px_0_60px_rgba(0,0,0,0.6)]'
             }`}
           >
-            <About onBack={handleBack} isBackTransitioning={!!transitioningBack} />
-          </Motion.div>
-        ) : activeSection === 'projects' ? (
-          <Motion.div
-            key="section-projects"
-            initial={isMobile ? { y: '-100%', x: 0 } : { x: '-100%', y: 0 }}
-            animate={isMobile ? { y: '0%', x: 0 } : { x: '0%', y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute inset-0 w-full h-full z-20 overflow-hidden ${
-              isMobile ? 'shadow-[0_24px_60px_rgba(0,0,0,0.7)]' : 'shadow-[24px_0_60px_rgba(0,0,0,0.6)]'
-            }`}
-          >
-            <Projects onBack={handleBack} isBackTransitioning={!!transitioningBack} />
-          </Motion.div>
-        ) : activeSection === 'tech-stack' ? (
-          <Motion.div
-            key="section-tech-stack"
-            initial={isMobile ? { y: '-100%', x: 0 } : { x: '-100%', y: 0 }}
-            animate={isMobile ? { y: '0%', x: 0 } : { x: '0%', y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute inset-0 w-full h-full z-20 overflow-hidden ${
-              isMobile ? 'shadow-[0_24px_60px_rgba(0,0,0,0.7)]' : 'shadow-[24px_0_60px_rgba(0,0,0,0.6)]'
-            }`}
-          >
-            <TechStack onBack={handleBack} isBackTransitioning={!!transitioningBack} />
+            <ActiveSection onBack={handleBack} isBackTransitioning={!!transitioningBack} />
           </Motion.div>
         ) : isMobile ? (
           /* Mobile layout: identity, vertical 3D reel, and profile/contact actions. */
@@ -245,9 +234,9 @@ function App() {
               <button type="button" aria-label={t.home.aboutMe} onClick={() => handleCardClick(SPIRAL_ITEMS[0])}>
                 <FiUser aria-hidden="true" />
               </button>
-              <a href="mailto:danishbintang80@gmail.com" aria-label={t.home.contactMe}>
+              <button type="button" aria-label={t.home.contactMe} onClick={() => handleCardClick(SPIRAL_ITEMS[4])}>
                 <FiMessageCircle aria-hidden="true" />
-              </a>
+              </button>
             </nav>
 
             {/* Mobile Right Navigation Dots */}

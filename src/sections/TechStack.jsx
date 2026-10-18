@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { FiArrowLeft, FiGithub, FiX } from 'react-icons/fi';
-import LanguageToggle from '../components/LanguageToggle';
+import { FiGithub, FiX } from 'react-icons/fi';
+import SectionHeader from '../components/SectionHeader';
 import { useLanguage } from '../i18n/languageContext';
 import { portfolioData } from '../data/portfolioData';
 import { getTechIcon, TECH_CATEGORIES } from '../lib/techIcons';
@@ -77,29 +77,13 @@ const TechStack = ({ onBack, isBackTransitioning = false }) => {
 
   return (
     <section className="h-full w-full bg-white text-zinc-900 select-none relative overflow-hidden flex flex-col">
-      {/* Header */}
-      <header className="w-full flex items-center justify-between z-30 shrink-0 max-w-6xl mx-auto px-4 sm:px-8 pt-5 sm:pt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={t.backToHome}
-          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center cursor-pointer hover:bg-black hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
-            isBackTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
-        >
-          <FiArrowLeft size={18} className="sm:text-[20px]" />
-        </button>
-
-        <div className="text-center">
-          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-            {ts.eyebrow}
-            <span className="hidden sm:inline"> · {ts.count(techStack.length)}</span>
-          </span>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">{ts.title}</h1>
-        </div>
-
-        <LanguageToggle tone="light" className="shrink-0" />
-      </header>
+      <SectionHeader
+        onBack={onBack}
+        isBackTransitioning={isBackTransitioning}
+        eyebrow={ts.eyebrow}
+        meta={ts.count(techStack.length)}
+        title={ts.title}
+      />
 
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain no-scrollbar">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10 pb-40">
