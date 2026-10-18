@@ -1,6 +1,6 @@
 "use client";
 import { IconArrowNarrowRight, IconArrowUpRight, IconBrandGithub } from "@tabler/icons-react";
-import { useState, useRef, useId, useEffect } from "react";
+import { useState, useRef, useId, useEffect, useCallback } from "react";
 
 // Recordings open on a loading screen; skip it and loop from here instead.
 const DEMO_START = 1.5;
@@ -94,7 +94,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
     <div className="[perspective:1200px] [transform-style:preserve-3d]">
       <li
         ref={slideRef}
-        className={`relative flex flex-col ${SLIDE_SIZE} mx-[3vmin] sm:mx-[4vmin] z-10 cursor-pointer`}
+        className={`relative flex flex-col ${SLIDE_SIZE} mx-[3vmin] sm:mx-[4vmin] z-10`}
         onClick={() => handleSlideClick(index)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -182,19 +182,30 @@ const CarouselControl = ({ type, title, handleClick }) => {
   );
 };
 
+// Wheel: one slide per gesture. A burst of wheel events (trackpad inertia) counts as one gesture
+// until it goes quiet for WHEEL_QUIET ms, but a long continuous scroll may step again after WHEEL_MAX.
+const WHEEL_THRESHOLD = 30;
+const WHEEL_QUIET = 160;
+const WHEEL_MAX = 650;
+// Drag: pixels before a press becomes a drag, and the share of a slide's width needed to change slide.
+const DRAG_START = 6;
+const DRAG_SWITCH = 0.18;
+
 export default function Carousel({ slides = [], demoLabel = "Demo" }) {
   const [current, setCurrent] = useState(0);
-  const touchStartX = useRef(0);
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const rootRef = useRef(null);
+  const drag = useRef({ id: null, startX: 0, startY: 0, active: false, moved: false });
+  const count = slides.length;
 
-  const handlePreviousClick = () => {
-    const previous = current - 1;
-    setCurrent(previous < 0 ? slides.length - 1 : previous);
-  };
+  const step = useCallback(
+    (dir) => setCurrent((c) => (c + dir + count) % count),
+    [count]
+  );
 
-  const handleNextClick = () => {
-    const next = current + 1;
-    setCurrent(next === slides.length ? 0 : next);
-  };
+  const handlePreviousClick = () => step(-1);
+  const handleNextClick = () => step(1);
 
   const handleSlideClick = (index) => {
     if (current !== index) {
@@ -202,16 +213,91 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
     }
   };
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
+  // Scroll wheel / trackpad, anywhere on the page while the carousel is mounted.
+  useEffect(() => {
+    if (count < 2) return;
+    let acc = 0;
+    let locked = false;
+    let lockedAt = 0;
+    let quietTimer;
+
+    const onWheel = (e) => {
+      if (e.ctrlKey) return; // pinch-zoom
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      clearTimeout(quietTimer);
+      quietTimer = setTimeout(() => {
+        locked = false;
+        acc = 0;
+      }, WHEEL_QUIET);
+
+      if (locked && performance.now() - lockedAt < WHEEL_MAX) return;
+      locked = false;
+      acc += delta;
+      if (Math.abs(acc) >= WHEEL_THRESHOLD) {
+        step(acc > 0 ? 1 : -1);
+        acc = 0;
+        locked = true;
+        lockedAt = performance.now();
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      clearTimeout(quietTimer);
+    };
+  }, [count, step]);
+
+  // Arrow keys.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.target instanceof HTMLElement && e.target.closest("input, textarea, [contenteditable]")) return;
+      if (e.key === "ArrowRight") step(1);
+      else if (e.key === "ArrowLeft") step(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [step]);
+
+  // Drag (mouse) and swipe (touch): the track follows the pointer, then snaps.
+  const onPointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    drag.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, active: false, moved: false };
   };
 
-  const handleTouchEnd = (e) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (diff > 45) {
-      handleNextClick();
-    } else if (diff < -45) {
-      handlePreviousClick();
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (d.id !== e.pointerId) return;
+    const dx = e.clientX - d.startX;
+    if (!d.active) {
+      if (Math.abs(dx) < DRAG_START || Math.abs(dx) < Math.abs(e.clientY - d.startY)) return;
+      d.active = true;
+      d.moved = true;
+      setIsDragging(true);
+      rootRef.current?.setPointerCapture(e.pointerId);
+    }
+    setDragX(dx);
+  };
+
+  const endDrag = (e) => {
+    const d = drag.current;
+    if (d.id !== e.pointerId) return;
+    if (d.active) {
+      const width = rootRef.current?.offsetWidth || 1;
+      const dx = e.clientX - d.startX;
+      if (Math.abs(dx) > width * DRAG_SWITCH) step(dx < 0 ? 1 : -1);
+    }
+    drag.current = { ...d, id: null, active: false };
+    setIsDragging(false);
+    setDragX(0);
+  };
+
+  // A drag must not also count as a click on the card or its links.
+  const onClickCapture = (e) => {
+    if (drag.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      drag.current.moved = false;
     }
   };
 
@@ -221,15 +307,20 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
 
   return (
     <div
-      className={`relative ${SLIDE_SIZE} mx-auto select-none`}
+      ref={rootRef}
+      className={`relative ${SLIDE_SIZE} mx-auto select-none touch-pan-y ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
       aria-labelledby={`carousel-heading-${id}`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClickCapture={onClickCapture}
+      onDragStart={(e) => e.preventDefault()}
     >
       <ul
-        className="absolute flex mx-[-3vmin] sm:mx-[-4vmin] transition-transform duration-700 ease-out"
+        className={`absolute flex mx-[-3vmin] sm:mx-[-4vmin] ${isDragging ? "" : "transition-transform duration-700 ease-out"}`}
         style={{
-          transform: `translateX(-${current * (100 / slides.length)}%)`,
+          transform: `translateX(calc(-${current * (100 / count)}% + ${dragX}px))`,
         }}
       >
         {slides.map((slide, index) => (
@@ -245,7 +336,7 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
       </ul>
 
       {/* Navigation Controls */}
-      <div className="absolute flex justify-center items-center w-full top-[calc(100%+1.5rem)] z-30">
+      <div className="absolute flex justify-center items-center w-full top-[calc(100%+1.5rem)] z-30 cursor-default">
         <CarouselControl
           type="previous"
           title="Go to previous slide"

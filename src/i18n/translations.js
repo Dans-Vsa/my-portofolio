@@ -31,8 +31,8 @@ export const translations = {
       viewCode: 'View code',
       kinds: { game: 'Game', web: 'Web', code: 'Open source' },
       demo: 'Demo',
-      hintDesktop: 'Use arrows or click a card to explore',
-      hintMobile: 'Swipe or tap cards to navigate',
+      hintDesktop: 'Scroll, drag, or use the arrow keys to browse',
+      hintMobile: 'Swipe left or right to browse',
       hintEsc: 'Press ESC to go back',
     },
 
@@ -178,8 +178,8 @@ export const translations = {
       viewCode: 'Lihat kode',
       kinds: { game: 'Game', web: 'Web', code: 'Open source' },
       demo: 'Demo',
-      hintDesktop: 'Gunakan panah atau klik kartu untuk menjelajah',
-      hintMobile: 'Geser atau ketuk kartu untuk berpindah',
+      hintDesktop: 'Scroll, geser, atau pakai tombol panah untuk menjelajah',
+      hintMobile: 'Geser ke kiri atau kanan untuk berpindah',
       hintEsc: 'Tekan ESC untuk kembali',
     },
 
