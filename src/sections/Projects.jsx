@@ -14,7 +14,7 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
     title: project.title,
     description: project.description[lang],
     kindLabel: t.projects.kinds[project.kind],
-    tags: project.tags,
+    tags: project.tags.map((tag) => (typeof tag === 'string' ? tag : tag[lang])),
     video: project.video,
     poster: project.poster,
     primary: project.liveLink
