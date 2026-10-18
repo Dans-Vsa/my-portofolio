@@ -3,13 +3,16 @@ import { motion as Motion } from 'framer-motion';
 import { FiArrowLeft } from 'react-icons/fi';
 import Carousel from '@/components/ui/carousel';
 import { portfolioData } from '../data/portfolioData';
+import LanguageToggle from '../components/LanguageToggle';
+import { useLanguage } from '../i18n/languageContext';
 
 const Projects = ({ onBack, isBackTransitioning = false }) => {
+  const { t } = useLanguage();
   // Map projects from portfolioData to carousel slide format
   const projectSlides = portfolioData.projects.map((project) => ({
     title: project.title,
     description: project.description,
-    button: 'View Project',
+    button: t.projects.viewProject,
     src: project.image,
     tags: project.tags,
     link: project.githubLink !== '#' ? project.githubLink : project.liveLink,
@@ -23,7 +26,7 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
         <button
           type="button"
           onClick={onBack}
-          aria-label="Back to Homepage"
+          aria-label={t.backToHome}
           className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center cursor-pointer hover:bg-black hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
             isBackTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
@@ -34,18 +37,14 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
         {/* Section Heading */}
         <div className="text-center">
           <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-            Selected Works
+            {t.projects.eyebrow} · {t.projects.builds(projectSlides.length)}
           </span>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">
-            Projects
+            {t.projects.title}
           </h1>
         </div>
 
-        {/* Right Counter / Info Pill */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 border border-zinc-200 text-xs font-semibold text-zinc-600">
-          <span>{projectSlides.length} Builds</span>
-        </div>
-        <div className="w-11 sm:hidden shrink-0" aria-hidden="true" />
+        <LanguageToggle tone="light" className="shrink-0" />
       </header>
 
       {/* Center Main Stage: 3D Carousel */}
@@ -56,9 +55,9 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
       {/* Bottom Hint */}
       <footer className="w-full text-center z-20 shrink-0 pb-1 sm:pb-2">
         <p className="text-[11px] sm:text-xs font-medium text-zinc-400">
-          <span className="hidden sm:inline">Use arrows or click card to explore • </span>
-          <span className="sm:hidden">Swipe or tap cards to navigate • </span>
-          Press ESC to go back
+          <span className="hidden sm:inline">{t.projects.hintDesktop} • </span>
+          <span className="sm:hidden">{t.projects.hintMobile} • </span>
+          {t.projects.hintEsc}
         </p>
       </footer>
     </section>

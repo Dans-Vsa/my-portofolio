@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FaUserAlt, FaLaptopCode, FaLayerGroup, FaCertificate, FaEnvelope } from 'react-icons/fa';
 import { FiArrowLeft, FiUser, FiMessageCircle } from 'react-icons/fi';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -11,54 +11,58 @@ import Projects from './sections/Projects';
 import PreviewTile from './sections/previews/PreviewTile';
 import { portfolioData } from './data/portfolioData';
 import { playReelClick } from './lib/reelClick';
+import LanguageToggle from './components/LanguageToggle';
+import { useLanguage } from './i18n/languageContext';
 
-const SPIRAL_ITEMS = [
+const buildSpiralItems = (cards) => [
   {
     id: 'about',
-    label: 'About',
-    preview: <PreviewTile icon={FaUserAlt} title="About" subtitle="Frontend Developer & UI/UX Designer" />,
+    label: cards.about.label,
+    preview: <PreviewTile icon={FaUserAlt} title={cards.about.label} subtitle={cards.about.subtitle} />,
   },
   {
     id: 'projects',
-    label: 'Projects',
+    label: cards.projects.label,
     preview: (
       <PreviewTile
         icon={FaLaptopCode}
-        title="Projects"
-        subtitle={`${portfolioData.projects.length} featured builds`}
+        title={cards.projects.label}
+        subtitle={cards.projects.subtitle(portfolioData.projects.length)}
       />
     ),
   },
   {
     id: 'tech-stack',
-    label: 'Tech Stack',
+    label: cards.techStack.label,
     preview: (
       <PreviewTile
         icon={FaLayerGroup}
-        title="Tech Stack"
-        subtitle={`${portfolioData.techStack.length} tools & languages`}
+        title={cards.techStack.label}
+        subtitle={cards.techStack.subtitle(portfolioData.techStack.length)}
       />
     ),
   },
   {
     id: 'certificates',
-    label: 'Certificates',
+    label: cards.certificates.label,
     preview: (
       <PreviewTile
         icon={FaCertificate}
-        title="Certificates"
-        subtitle={`${portfolioData.certificates.length} certifications earned`}
+        title={cards.certificates.label}
+        subtitle={cards.certificates.subtitle(portfolioData.certificates.length)}
       />
     ),
   },
   {
     id: 'contact',
-    label: 'Contact',
-    preview: <PreviewTile icon={FaEnvelope} title="Contact" subtitle="Let's build something together" />,
+    label: cards.contact.label,
+    preview: <PreviewTile icon={FaEnvelope} title={cards.contact.label} subtitle={cards.contact.subtitle} />,
   },
 ];
 
 function App() {
+  const { t } = useLanguage();
+  const SPIRAL_ITEMS = useMemo(() => buildSpiralItems(t.cards), [t]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(null);
   const [transitioningBack, setTransitioningBack] = useState(null);
@@ -224,10 +228,10 @@ function App() {
             </div>
 
             <nav className="mobile-home__actions" aria-label="Profile and contact">
-              <button type="button" aria-label="About me" onClick={() => handleCardClick(SPIRAL_ITEMS[0])}>
+              <button type="button" aria-label={t.home.aboutMe} onClick={() => handleCardClick(SPIRAL_ITEMS[0])}>
                 <FiUser aria-hidden="true" />
               </button>
-              <a href="mailto:danishbintang75@gmail.com" aria-label="Contact me">
+              <a href="mailto:danishbintang75@gmail.com" aria-label={t.home.contactMe}>
                 <FiMessageCircle aria-hidden="true" />
               </a>
             </nav>
@@ -242,7 +246,7 @@ function App() {
                     setActiveIndex(i);
                     playReelClick();
                   }}
-                  aria-label={`Go to ${item.label}`}
+                  aria-label={`${t.home.goTo} ${item.label}`}
                   aria-current={i === activeIndex ? 'true' : undefined}
                 >
                   <span
@@ -314,6 +318,13 @@ function App() {
           </Motion.div>
         )}
       </AnimatePresence>
+
+      {/* Home-screen language switch. About and Projects render their own in their headers. */}
+      {!activeSection && (
+        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-40">
+          <LanguageToggle tone="light" />
+        </div>
+      )}
 
       {/* Zoom Out & Circle Expansion Back Transition Overlay */}
       {transitioningBack && (
