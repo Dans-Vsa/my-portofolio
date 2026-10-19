@@ -54,8 +54,12 @@ const Projects = ({ onBack, isBackTransitioning = false }) => {
       </header>
 
       {/* Center Main Stage: 3D Carousel */}
-      <div className="relative flex-1 w-full flex items-center justify-center min-h-0 my-auto overflow-visible z-20">
-        <Carousel slides={projectSlides} demoLabel={t.projects.demo} />
+      {/* m-auto centers the carousel; when it is taller than the space it starts at the top and scrolls
+          instead of spilling over the header. */}
+      <div className="relative flex-1 w-full flex min-h-0 overflow-y-auto overflow-x-hidden no-scrollbar py-2 z-20">
+        <div className="m-auto">
+          <Carousel slides={projectSlides} demoLabel={t.projects.demo} />
+        </div>
       </div>
 
       {/* Bottom Hint */}

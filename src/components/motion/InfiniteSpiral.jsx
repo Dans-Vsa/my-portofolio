@@ -74,7 +74,9 @@ const InfiniteSpiral = ({
 
     let frameId;
     let previousTime = performance.now();
-    let bounds = root.getBoundingClientRect();
+    // Layout size (not getBoundingClientRect) so a CSS zoom on an ancestor doesn't skew the fit math.
+    const measure = () => ({ width: root.clientWidth, height: root.clientHeight });
+    let bounds = measure();
     lastInteractionRef.current = performance.now();
     const markInteraction = () => {
       lastInteractionRef.current = performance.now();
@@ -84,7 +86,7 @@ const InfiniteSpiral = ({
     const scrollSpeedMultiplier = Math.max(speed, 0) / 0.55;
 
     const resizeObserver = new ResizeObserver(() => {
-      bounds = root.getBoundingClientRect();
+      bounds = measure();
     });
     resizeObserver.observe(root);
 

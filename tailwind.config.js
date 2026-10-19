@@ -31,6 +31,8 @@ export default {
       },
       screens: {
         xs: '380px',
+        // Wide but short windows (laptops, zoomed-in browsers): layouts that stack vertically go side by side.
+        short: { raw: '(min-width: 768px) and (max-height: 720px)' },
       },
       backgroundImage: {
         'gradient-conic': 'conic-gradient(var(--conic-position), var(--tw-gradient-stops))',

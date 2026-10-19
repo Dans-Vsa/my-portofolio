@@ -5,8 +5,10 @@ import { useState, useRef, useId, useEffect, useCallback } from "react";
 // Recordings open on a loading screen; skip it and loop from here instead.
 const DEMO_START = 1.5;
 
-const SLIDE_SIZE =
-  "w-[80vmin] h-[100vmin] sm:w-[56vmin] sm:h-[62vmin] md:w-[52vmin] md:h-[58vmin] sm:max-w-[480px] sm:max-h-[530px]";
+// Cards size by width only; their height follows the content (16:9 demo + text), so nothing gets clipped.
+// On short screens the card turns landscape: demo on the left, text on the right.
+// Landscape width is also capped by height: the demo (56% wide, 16:9) must fit in 100dvh minus ~190px of chrome.
+const SLIDE_WIDTH = "w-[min(84vw,400px)] sm:w-[min(60vw,460px)] short:w-[min(86vw,760px,calc((100dvh-190px)*3.17))]";
 
 // Muted looping demo. Only the active slide loads and plays; the rest show the poster.
 const DemoVideo = ({ src, poster, title, active }) => {
@@ -94,7 +96,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
     <div className="[perspective:1200px] [transform-style:preserve-3d]">
       <li
         ref={slideRef}
-        className={`relative flex flex-col ${SLIDE_SIZE} mx-[3vmin] sm:mx-[4vmin] z-10`}
+        className={`relative ${SLIDE_WIDTH} mx-[3vmin] sm:mx-[4vmin] z-10`}
         onClick={() => handleSlideClick(index)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -105,7 +107,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
         }}
       >
         <div
-          className={`absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-zinc-950 text-white shadow-2xl transition-opacity duration-500 ${
+          className={`relative flex flex-col short:flex-row overflow-hidden rounded-2xl bg-zinc-950 text-white shadow-2xl transition-opacity duration-500 ${
             isActive ? "opacity-100" : "opacity-50"
           }`}
           style={{
@@ -113,7 +115,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
           }}
         >
           {/* Demo */}
-          <div className="relative w-full aspect-video shrink-0 bg-zinc-900 overflow-hidden">
+          <div className="relative w-full short:w-[56%] aspect-video shrink-0 bg-zinc-900 overflow-hidden">
             <DemoVideo src={video} poster={poster} title={title} active={isActive} />
             <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]">
               <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-red-500 animate-pulse" : "bg-zinc-500"}`} />
@@ -123,7 +125,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
 
           {/* Info */}
           <article
-            className={`flex flex-1 min-h-0 flex-col gap-1.5 sm:gap-2 p-4 sm:p-5 text-left transition-opacity duration-500 ${
+            className={`flex flex-1 min-w-0 flex-col gap-1.5 sm:gap-2 p-4 sm:p-5 text-left transition-opacity duration-500 ${
               isActive ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
@@ -133,7 +135,7 @@ const Slide = ({ slide, index, current, handleSlideClick, demoLabel }) => {
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight leading-tight">{title}</h2>
             <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed line-clamp-3">{description}</p>
 
-            <div className="mt-auto flex items-center gap-2 pt-2">
+            <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
               <a
                 href={primary.href}
                 target="_blank"
@@ -308,7 +310,7 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
   return (
     <div
       ref={rootRef}
-      className={`relative ${SLIDE_SIZE} mx-auto select-none touch-pan-y ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+      className={`relative ${SLIDE_WIDTH} mx-auto select-none touch-pan-y ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
       aria-labelledby={`carousel-heading-${id}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -318,7 +320,7 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
       onDragStart={(e) => e.preventDefault()}
     >
       <ul
-        className={`absolute flex mx-[-3vmin] sm:mx-[-4vmin] ${isDragging ? "" : "transition-transform duration-700 ease-out"}`}
+        className={`flex w-max items-start mx-[-3vmin] sm:mx-[-4vmin] ${isDragging ? "" : "transition-transform duration-700 ease-out"}`}
         style={{
           transform: `translateX(calc(-${current * (100 / count)}% + ${dragX}px))`,
         }}
@@ -336,7 +338,7 @@ export default function Carousel({ slides = [], demoLabel = "Demo" }) {
       </ul>
 
       {/* Navigation Controls */}
-      <div className="absolute flex justify-center items-center w-full top-[calc(100%+1.5rem)] z-30 cursor-default">
+      <div className="relative flex justify-center items-center w-full mt-5 sm:mt-7 short:mt-4 z-30 cursor-default">
         <CarouselControl
           type="previous"
           title="Go to previous slide"

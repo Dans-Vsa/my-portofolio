@@ -26,6 +26,15 @@ const SECTIONS = {
   contact: Contact,
 };
 
+// Desktop home scales with the window like browser zoom. The layout was tuned at a ~1015x497 viewport
+// (a 1920px screen at 125% OS scaling viewed at 150%), so a window that size or smaller shows it 1:1
+// and larger windows grow it proportionally, up to 2x.
+const HOME_BASE = { width: 1015, height: 497 };
+const getHomeZoom = () =>
+  typeof window === 'undefined'
+    ? 1
+    : Math.min(2, Math.max(1, Math.min(window.innerWidth / HOME_BASE.width, window.innerHeight / HOME_BASE.height)));
+
 const buildSpiralItems = (cards) => [
   {
     id: 'about',
@@ -85,9 +94,12 @@ function App() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false));
 
+  const [homeZoom, setHomeZoom] = useState(getHomeZoom);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      setHomeZoom(getHomeZoom());
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -277,6 +289,8 @@ function App() {
             }}
             className="absolute inset-0 w-full h-full z-10 overflow-hidden"
           >
+            {/* `zoom` scales the whole layout like browser zoom. Percentages are not zoomed, so 100% still fills the screen. */}
+            <div className="w-full h-full" style={{ zoom: homeZoom }}>
             <div className="max-w-7xl mx-auto h-full px-6 sm:px-10 lg:px-16 flex flex-col md:flex-row items-center gap-lg relative">
               {/* Left Side: Identity Panel */}
               <div className="w-full md:w-[340px] md:shrink-0 pt-8 md:pt-0 z-20">
@@ -322,13 +336,14 @@ function App() {
                 ))}
               </div>
             </div>
+            </div>
           </Motion.div>
         )}
       </AnimatePresence>
 
       {/* Home-screen language switch. About and Projects render their own in their headers. */}
       {!activeSection && (
-        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-40">
+        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-40" style={isMobile ? undefined : { zoom: homeZoom }}>
           <LanguageToggle tone="light" />
         </div>
       )}
