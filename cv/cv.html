@@ -286,8 +286,34 @@ const CV = {
   },
 };
 
-const lang = new URLSearchParams(location.search).get('lang') === 'id' ? 'id' : 'en';
+// Tailored versions for specific applications: ?variant=gaming (Student Staff, Gaming Garage UTDI).
+// A variant overrides text and reorders projects; everything else comes from the base CV.
+const VARIANTS = {
+  gaming: {
+    // 'portfolio' is the base CV's first project, whose name differs per language.
+    order: ['portfolio', 'Legenda Lembah Angin', 'Kopi Tycoon', 'PortoGameLab', 'Fujimoto Archive', 'SpendWise API'],
+    en: {
+      role: 'Frontend Developer & UI/UX Designer · Game Developer',
+      summary:
+        'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX, with a strong interest in game development. I build responsive interfaces with React and Tailwind CSS, design in Figma, and make games people can play right in the browser, like the RPG Legenda Lembah Angin and the idle game Kopi Tycoon (Godot 4). Recently completed the MSIB Batch 4 Python Machine Learning internship at Vinix7 with a very good rating.',
+    },
+    id: {
+      role: 'Frontend Developer & UI/UX Designer · Game Developer',
+      summary:
+        'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX, dengan minat kuat di game development. Saya membangun antarmuka responsif dengan React dan Tailwind CSS, mendesain di Figma, dan membuat game yang bisa langsung dimainkan di browser, seperti RPG Legenda Lembah Angin dan game idle Kopi Tycoon (Godot 4). Baru saja menyelesaikan magang MSIB Batch 4 bidang Python Machine Learning di Vinix7 dengan predikat sangat baik.',
+    },
+  },
+};
+
+const params = new URLSearchParams(location.search);
+const lang = params.get('lang') === 'id' ? 'id' : 'en';
 const t = CV[lang];
+const variant = VARIANTS[params.get('variant')];
+if (variant) {
+  Object.assign(t, variant[lang]);
+  const portfolio = t.projects[0];
+  t.projects = variant.order.map((name) => (name === 'portfolio' ? portfolio : t.projects.find((p) => p.name === name))).filter(Boolean);
+}
 document.documentElement.lang = lang;
 const get = (path) => path.split('.').reduce((o, k) => o[k], t);
 
