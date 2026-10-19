@@ -4,6 +4,7 @@ import { FiArrowUpRight, FiCheck, FiCopy, FiDownload, FiGithub, FiInstagram, FiM
 import { FaWhatsapp } from 'react-icons/fa';
 import SectionHeader from '../components/SectionHeader';
 import { useLanguage } from '../i18n/languageContext';
+import { getCvUrl } from '../lib/cv';
 import { WEB3FORMS_ACCESS_KEY, WEB3FORMS_ENDPOINT } from '../lib/contactConfig';
 
 const EMAIL = 'danishbintang80@gmail.com';
@@ -42,7 +43,7 @@ const useJakartaTime = (locale) => {
 };
 
 const Contact = ({ onBack, isBackTransitioning = false }) => {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const ct = t.contact;
   const time = useJakartaTime(t.certificates.locale);
   const [copied, setCopied] = useState(false);
@@ -170,8 +171,8 @@ const Contact = ({ onBack, isBackTransitioning = false }) => {
 
             <Motion.a
               {...reveal(0.14)}
-              href="/cv-vesa.pdf"
-              download="Danish_Vesa_CV.pdf"
+              href={getCvUrl(lang)}
+              download={`Danish-Vesa-CV-${lang.toUpperCase()}.pdf`}
               className="inline-flex w-fit items-center gap-2 rounded-btn border border-zinc-900 px-5 py-3 text-sm font-semibold hover:bg-zinc-900 hover:text-white transition-colors"
             >
               <FiDownload size={16} />

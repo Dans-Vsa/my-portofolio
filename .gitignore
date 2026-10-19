@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# CV render previews (cv/build-cv.cjs)
+cv/*.png

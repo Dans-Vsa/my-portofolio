@@ -1,0 +1,310 @@
+<!doctype html>
+<!--
+  CV source for Danish Vesa. Open with ?lang=en or ?lang=id.
+  Render to PDF with: node cv/build-cv.cjs "$(npm root -g)"
+  Facts only: every line is backed by a repo, a certificate, the academic transcript or the user's answers.
+  DOM order puts the main column first so ATS parsers read Profile/Experience/Projects before the sidebar.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Danish Vesa Bintang Parikesit · CV</title>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" />
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0b0b0b;
+    --text: #262626;
+    --muted: #6b6b6b;
+    --faint: #9b9b9b;
+    --rule: #e6e6e6;
+    --panel: #f4f4f3;
+    --side: 62mm;
+  }
+  html, body { background: #fff; }
+  body {
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    font-family: 'Switzer', system-ui, sans-serif;
+    font-size: 8.9pt;
+    line-height: 1.45;
+    color: var(--text);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Exactly one A4 sheet: anything taller is clipped instead of spilling onto a blank second page. */
+  .page { display: grid; grid-template-columns: 1fr var(--side); grid-template-rows: auto 1fr; height: 297mm; overflow: hidden; }
+
+  header { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr var(--side); }
+  .id { padding: 12mm 9mm 5mm 14mm; display: flex; flex-direction: column; justify-content: flex-end; }
+  h1 { font-size: 23pt; font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; color: var(--ink); }
+  .role { margin-top: 2.4mm; font-size: 11.5pt; font-weight: 500; letter-spacing: -0.01em; color: var(--muted); }
+  .badge {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 1.6mm; margin-top: 3.4mm;
+    padding: 1mm 2.6mm; border: 0.6pt solid var(--rule); border-radius: 99px; font-size: 7.6pt; font-weight: 500; color: var(--muted);
+  }
+  .badge i { width: 1.6mm; height: 1.6mm; border-radius: 50%; background: #1f9d55; display: block; }
+  .head-side { background: var(--panel); padding: 12mm 8mm 5mm 8mm; display: flex; flex-direction: column; justify-content: flex-end; }
+
+  main { padding: 0 9mm 6mm 14mm; }
+  aside { background: var(--panel); padding: 0 8mm 6mm 8mm; }
+
+  section { margin-top: 5.2mm; }
+  section:first-child { margin-top: 0; }
+  h2 {
+    display: flex; align-items: center; gap: 2.4mm;
+    font-size: 7.2pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--ink); margin-bottom: 2.6mm;
+  }
+  main h2::after { content: ''; flex: 1; height: 0.6pt; background: var(--rule); }
+
+  .summary { font-size: 9.3pt; line-height: 1.55; }
+
+  .item + .item { margin-top: 3.2mm; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
+  h3 { font-size: 9.8pt; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+  .when { font-size: 7.8pt; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .org { font-size: 8.2pt; color: var(--muted); margin-top: 0.3mm; }
+  .item p { margin-top: 0.9mm; }
+  .item ul { margin-top: 1mm; padding-left: 3.6mm; }
+  .item li + li { margin-top: 0.5mm; }
+
+  .proj { padding: 2.4mm 0; border-top: 0.6pt solid var(--rule); }
+  .proj:first-of-type { border-top: 0; padding-top: 0; }
+  .proj .url { font-size: 7.6pt; color: var(--muted); white-space: nowrap; }
+  .proj p { margin-top: 0.7mm; }
+  .tags { margin-top: 1.2mm; display: flex; flex-wrap: wrap; gap: 1.2mm; }
+  .tags span { font-size: 7pt; font-weight: 500; color: var(--muted); padding: 0.3mm 1.8mm; border: 0.6pt solid var(--rule); border-radius: 99px; }
+
+  aside h2 { color: var(--ink); }
+  aside { padding-top: 0; }
+  .contact li { list-style: none; font-size: 8.3pt; line-height: 1.35; }
+  .contact li + li { margin-top: 1.1mm; }
+  .contact .k { display: block; color: var(--faint); font-size: 6.6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; }
+  .contact .v { color: var(--ink); font-weight: 500; }
+
+  .skill + .skill { margin-top: 2.1mm; }
+  .skill b { display: block; font-size: 7.6pt; font-weight: 600; color: var(--ink); margin-bottom: 0.5mm; }
+  .skill span { font-size: 8.1pt; }
+
+  .edu h3 { font-size: 9.2pt; }
+  .edu .meta { font-size: 8.1pt; color: var(--muted); margin-top: 0.6mm; }
+  .edu .meta span { display: block; }
+  .edu .gpa { margin-top: 1.6mm; display: inline-block; font-size: 8pt; font-weight: 600; color: var(--ink); padding: 0.4mm 2mm; background: #fff; border-radius: 99px; }
+  .edu .course { margin-top: 1.8mm; font-size: 7.9pt; color: var(--muted); }
+  .edu .course b { color: var(--text); font-weight: 600; }
+
+  .certs .grp + .grp { margin-top: 2mm; }
+  .certs .grp b { display: block; font-size: 7.6pt; font-weight: 600; color: var(--ink); margin-bottom: 0.5mm; }
+  .certs li { list-style: none; font-size: 8pt; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="id">
+      <h1>Danish Vesa Bintang Parikesit</h1>
+      <p class="role" data-t="role"></p>
+      <span class="badge"><i></i><span data-t="open"></span></span>
+    </div>
+    <div class="head-side">
+      <ul class="contact">
+        <li><span class="k">Email</span><a class="v" href="mailto:danishbintang80@gmail.com">danishbintang80@gmail.com</a></li>
+        <li><span class="k" data-t="phoneLabel"></span><a class="v" href="https://wa.me/6281382449254">+62 813 8244 9254</a></li>
+        <li><span class="k">Portfolio</span><a class="v" href="https://my-portofolio-bay-nine.vercel.app">my-portofolio-bay-nine.vercel.app</a></li>
+        <li><span class="k">GitHub</span><a class="v" href="https://github.com/Dans-Vsa">github.com/Dans-Vsa</a></li>
+        <li><span class="k" data-t="cityLabel"></span><span class="v" data-t="location"></span></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2 data-t="h.summary"></h2>
+      <p class="summary" data-t="summary"></p>
+    </section>
+
+    <section>
+      <h2 data-t="h.experience"></h2>
+      <div class="item">
+        <div class="row"><h3 data-t="exp.role"></h3><span class="when" data-t="exp.period"></span></div>
+        <div class="org">PT Vinix Seven Aurum (Vinix7) · <span data-t="exp.program"></span></div>
+        <ul data-list="exp.points"></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-t="h.projects"></h2>
+      <div id="projects"></div>
+    </section>
+
+  </main>
+
+  <aside>
+    <section>
+      <h2 data-t="h.skills"></h2>
+      <div id="skills"></div>
+    </section>
+
+    <section class="edu">
+      <h2 data-t="h.education"></h2>
+      <h3>Universitas Teknologi Digital Indonesia</h3>
+      <div class="meta"><span data-t="edu.degree"></span><span data-t="edu.period"></span></div>
+      <span class="gpa" data-t="edu.gpa"></span>
+      <p class="course" data-t="edu.course"></p>
+    </section>
+
+    <section class="certs">
+      <h2 data-t="h.certs"></h2>
+      <div id="certs"></div>
+    </section>
+  </aside>
+</div>
+
+<script>
+const CERTS = {
+  ai: ['AI for Software Engineer', 'Artificial Intelligence Introduction', 'Maximizing the Use of AI Tools', 'Maximizing the Use of ChatGPT', 'AI for Spreadsheets', 'AI for Content Marketing', 'Note-Taking Using AI'],
+  web: ['Introduction to CSS', 'CSS Box Model', 'Internet Introduction'],
+};
+
+const CV = {
+  en: {
+    role: 'Frontend Developer & UI/UX Designer',
+    open: 'Open to internships, freelance & full-time roles',
+    location: 'Yogyakarta, Indonesia',
+    cityLabel: 'Location',
+    phoneLabel: 'Phone / WhatsApp',
+    h: { summary: 'Profile', experience: 'Experience', projects: 'Selected projects', contact: 'Contact', skills: 'Skills', education: 'Education', certs: 'Certifications' },
+    summary:
+      'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX. I build responsive, accessible interfaces with React and Tailwind CSS, design in Figma, and ship interactive work people can try right in the browser, from bilingual fan sites to playable games. Recently completed the MSIB Batch 4 Python Machine Learning internship at Vinix7 with a very good rating.',
+    exp: {
+      role: 'Python Machine Learning Intern',
+      period: 'Feb – Jun 2026',
+      program: 'MSIB Kampus Merdeka Batch 4',
+      points: ['Completed the independent internship in the Python Machine Learning division with a "very good" rating.'],
+    },
+    edu: {
+      degree: "Bachelor's in Informatics",
+      period: '2023 – Present',
+      gpa: 'GPA 3.55 / 4.00',
+      course: '<b>Relevant coursework:</b> Web Client Programming, Web Frameworks, Mobile Frameworks, Software Engineering, Systems Analysis & Design, Machine Learning, Computer Vision, Big Data Analytics',
+    },
+    certGroups: [['MySkill · Dec 2025', CERTS.ai], ['MySkill · Oct 2025', CERTS.web]],
+    skills: [
+      ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
+      ['UI/UX', 'Figma, wireframes, prototypes, design systems, motion'],
+      ['Backend & data', 'Python, FastAPI, Node.js, PHP, Laravel, MySQL, SQLite, MongoDB'],
+      ['Game dev', 'Godot 4 (GDScript), HTML5 Canvas'],
+      ['Tools', 'Git & GitHub, Docker, VS Code, Vercel'],
+    ],
+    projects: [
+      {
+        name: 'Personal portfolio', url: 'my-portofolio-bay-nine.vercel.app', tags: ['React', 'Vite', 'Tailwind CSS', 'Framer Motion'],
+        text: 'Portfolio with a 3D spiral navigation, an ID/EN switch, recorded demo videos for every project and a contact form that delivers straight to email.',
+      },
+      {
+        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '7 sites'],
+        text: "Bilingual fan archive of Tatsuki Fujimoto's work with six companion sites, including a 171-character Chainsaw Man encyclopedia with spoiler guards.",
+      },
+      {
+        name: 'Legenda Lembah Angin', url: 'dans-vsa.github.io/legenda-lembah-angin', tags: ['JavaScript', 'Canvas', 'Godot 4'],
+        text: 'Browser RPG with an Active Time Battle system, elemental weaknesses, a boss fight and saves; pixel art and chiptune music are generated in code.',
+      },
+      {
+        name: 'PortoGameLab', url: 'dans-vsa.github.io/PortoGameLab', tags: ['JavaScript', 'Canvas'],
+        text: 'A portfolio explored as a game: walk a research lab, scan exhibits and unlock achievements, with a minimap and a bilingual UI.',
+      },
+      {
+        name: 'Kopi Tycoon', url: 'dans-vsa.github.io/kopi-tycoon', tags: ['Godot 4', 'GDScript'],
+        text: 'Idle game about growing a coffee shop, with six generators, prestige, offline earnings and automatic saves.',
+      },
+      {
+        name: 'SpendWise API', url: 'github.com/Dans-Vsa/spendwise-api', tags: ['FastAPI', 'SQLAlchemy', 'pytest', 'Docker'],
+        text: 'Personal finance REST API with JWT auth, monthly budgets, reports and CSV import/export, tested in CI.',
+      },
+    ],
+  },
+  id: {
+    role: 'Frontend Developer & UI/UX Designer',
+    open: 'Terbuka untuk magang, freelance & full-time',
+    location: 'Yogyakarta, Indonesia',
+    cityLabel: 'Domisili',
+    phoneLabel: 'Telepon / WhatsApp',
+    h: { summary: 'Profil', experience: 'Pengalaman', projects: 'Proyek pilihan', contact: 'Kontak', skills: 'Keahlian', education: 'Pendidikan', certs: 'Sertifikasi' },
+    summary:
+      'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX. Saya membangun antarmuka yang responsif dan mudah diakses dengan React dan Tailwind CSS, mendesain di Figma, dan merilis karya interaktif yang bisa langsung dicoba di browser, dari situs fan dua bahasa sampai game. Baru saja menyelesaikan magang MSIB Batch 4 bidang Python Machine Learning di Vinix7 dengan predikat sangat baik.',
+    exp: {
+      role: 'Magang Python Machine Learning',
+      period: 'Feb – Jun 2026',
+      program: 'MSIB Kampus Merdeka Batch 4',
+      points: ['Menyelesaikan magang mandiri di Divisi Python Machine Learning dengan predikat "sangat baik".'],
+    },
+    edu: {
+      degree: 'S1 Informatika',
+      period: '2023 – Sekarang',
+      gpa: 'IPK 3,55 / 4,00',
+      course: '<b>Mata kuliah relevan:</b> Pemrograman Web Client, Framework Web, Framework Mobile, Rekayasa Perangkat Lunak, Analisis & Desain Sistem, Machine Learning, Computer Vision, Big Data Analytics',
+    },
+    certGroups: [['MySkill · Des 2025', CERTS.ai], ['MySkill · Okt 2025', CERTS.web]],
+    skills: [
+      ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
+      ['UI/UX', 'Figma, wireframe, prototipe, design system, motion'],
+      ['Backend & data', 'Python, FastAPI, Node.js, PHP, Laravel, MySQL, SQLite, MongoDB'],
+      ['Game dev', 'Godot 4 (GDScript), HTML5 Canvas'],
+      ['Tools', 'Git & GitHub, Docker, VS Code, Vercel'],
+    ],
+    projects: [
+      {
+        name: 'Portofolio pribadi', url: 'my-portofolio-bay-nine.vercel.app', tags: ['React', 'Vite', 'Tailwind CSS', 'Framer Motion'],
+        text: 'Portofolio dengan navigasi spiral 3D, pilihan bahasa ID/EN, video demo untuk setiap proyek, dan form kontak yang langsung masuk ke email.',
+      },
+      {
+        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '7 situs'],
+        text: 'Arsip fan dua bahasa untuk karya Tatsuki Fujimoto dengan enam situs pendamping, termasuk ensiklopedia 171 karakter Chainsaw Man dengan sensor spoiler.',
+      },
+      {
+        name: 'Legenda Lembah Angin', url: 'dans-vsa.github.io/legenda-lembah-angin', tags: ['JavaScript', 'Canvas', 'Godot 4'],
+        text: 'RPG browser dengan sistem Active Time Battle, kelemahan elemen, pertarungan bos, dan fitur simpan; pixel art dan musik chiptune dibuat lewat kode.',
+      },
+      {
+        name: 'PortoGameLab', url: 'dans-vsa.github.io/PortoGameLab', tags: ['JavaScript', 'Canvas'],
+        text: 'Portofolio yang dijelajahi seperti game: berjalan di laboratorium riset, scan exhibit, dan membuka achievement, dengan minimap dan UI dua bahasa.',
+      },
+      {
+        name: 'Kopi Tycoon', url: 'dans-vsa.github.io/kopi-tycoon', tags: ['Godot 4', 'GDScript'],
+        text: 'Game idle tentang membesarkan kedai kopi, dengan enam generator, prestige, penghasilan offline, dan simpan otomatis.',
+      },
+      {
+        name: 'SpendWise API', url: 'github.com/Dans-Vsa/spendwise-api', tags: ['FastAPI', 'SQLAlchemy', 'pytest', 'Docker'],
+        text: 'REST API keuangan pribadi dengan autentikasi JWT, anggaran bulanan, laporan, serta impor/ekspor CSV, diuji lewat CI.',
+      },
+    ],
+  },
+};
+
+const lang = new URLSearchParams(location.search).get('lang') === 'id' ? 'id' : 'en';
+const t = CV[lang];
+document.documentElement.lang = lang;
+const get = (path) => path.split('.').reduce((o, k) => o[k], t);
+
+document.querySelectorAll('[data-t]').forEach((el) => { el.innerHTML = get(el.dataset.t); });
+document.querySelectorAll('[data-list]').forEach((el) => {
+  el.innerHTML = get(el.dataset.list).map((x) => `<li>${x}</li>`).join('');
+});
+document.getElementById('projects').innerHTML = t.projects.map((p) => `
+  <div class="proj">
+    <div class="row"><h3>${p.name}</h3><a class="url" href="https://${p.url}">${p.url}</a></div>
+    <p>${p.text}</p>
+    <div class="tags">${p.tags.map((x) => `<span>${x}</span>`).join('')}</div>
+  </div>`).join('');
+document.getElementById('skills').innerHTML = t.skills
+  .map(([k, v]) => `<div class="skill"><b>${k}</b><span>${v}</span></div>`).join('');
+document.getElementById('certs').innerHTML = t.certGroups
+  .map(([g, list]) => `<div class="grp"><b>${g}</b><ul>${list.map((x) => `<li>${x}</li>`).join('')}</ul></div>`).join('');
+</script>
+</body>
+</html>

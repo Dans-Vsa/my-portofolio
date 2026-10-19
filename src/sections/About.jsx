@@ -5,6 +5,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { LampContainer } from '@/components/ui/lamp';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLanguage } from '../i18n/languageContext';
+import { getCvUrl } from '../lib/cv';
 import { portfolioData } from '../data/portfolioData';
 import { getTechIcon, TECH_CATEGORIES } from '../lib/techIcons';
 
@@ -59,7 +60,7 @@ const BackButton = ({ onBack, label, hidden, className = '' }) => (
 );
 
 const About = ({ onBack, isBackTransitioning = false }) => {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const a = t.about;
   const [pastHero, setPastHero] = useState(false);
 
@@ -301,8 +302,8 @@ const About = ({ onBack, isBackTransitioning = false }) => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href="/cv-vesa.pdf"
-              download="Danish_Vesa_CV.pdf"
+              href={getCvUrl(lang)}
+              download={`Danish-Vesa-CV-${lang.toUpperCase()}.pdf`}
               className="inline-flex items-center justify-center gap-2.5 py-3.5 px-7 bg-white text-black font-semibold text-sm rounded-btn hover:bg-zinc-200 active:scale-[0.98] transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <FiDownload size={17} />
