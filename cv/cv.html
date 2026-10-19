@@ -53,16 +53,16 @@
   main { padding: 0 9mm 6mm 14mm; }
   aside { background: var(--panel); padding: 0 8mm 6mm 8mm; }
 
-  section { margin-top: 5.2mm; }
+  section { margin-top: 4.6mm; }
   section:first-child { margin-top: 0; }
   h2 {
     display: flex; align-items: center; gap: 2.4mm;
     font-size: 7.2pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em;
-    color: var(--ink); margin-bottom: 2.6mm;
+    color: var(--ink); margin-bottom: 2.2mm;
   }
   main h2::after { content: ''; flex: 1; height: 0.6pt; background: var(--rule); }
 
-  .summary { font-size: 9.3pt; line-height: 1.55; }
+  .summary { font-size: 9.3pt; line-height: 1.5; }
 
   .item + .item { margin-top: 3.2mm; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
@@ -73,11 +73,11 @@
   .item ul { margin-top: 1mm; padding-left: 3.6mm; }
   .item li + li { margin-top: 0.5mm; }
 
-  .proj { padding: 2.4mm 0; border-top: 0.6pt solid var(--rule); }
+  .proj { padding: 2mm 0; border-top: 0.6pt solid var(--rule); }
   .proj:first-of-type { border-top: 0; padding-top: 0; }
   .proj .url { font-size: 7.6pt; color: var(--muted); white-space: nowrap; }
   .proj p { margin-top: 0.7mm; }
-  .tags { margin-top: 1.2mm; display: flex; flex-wrap: wrap; gap: 1.2mm; }
+  .tags { margin-top: 1mm; display: flex; flex-wrap: wrap; gap: 1.2mm; }
   .tags span { font-size: 7pt; font-weight: 500; color: var(--muted); padding: 0.3mm 1.8mm; border: 0.6pt solid var(--rule); border-radius: 99px; }
 
   aside h2 { color: var(--ink); }
@@ -95,12 +95,7 @@
   .edu .meta { font-size: 8.1pt; color: var(--muted); margin-top: 0.6mm; }
   .edu .meta span { display: block; }
   .edu .gpa { margin-top: 1.6mm; display: inline-block; font-size: 8pt; font-weight: 600; color: var(--ink); padding: 0.4mm 2mm; background: #fff; border-radius: 99px; }
-  .edu .course { margin-top: 1.8mm; font-size: 7.9pt; color: var(--muted); }
-  .edu .course b { color: var(--text); font-weight: 600; }
 
-  .certs .grp + .grp { margin-top: 2mm; }
-  .certs .grp b { display: block; font-size: 7.6pt; font-weight: 600; color: var(--ink); margin-bottom: 0.5mm; }
-  .certs li { list-style: none; font-size: 8pt; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -135,6 +130,11 @@
         <div class="org">PT Vinix Seven Aurum (Vinix7) · <span data-t="exp.program"></span></div>
         <ul data-list="exp.points"></ul>
       </div>
+      <div class="item">
+        <div class="row"><h3 data-t="org.role"></h3><span class="when" data-t="org.period"></span></div>
+        <div class="org" data-t="org.place"></div>
+        <ul data-list="org.points"></ul>
+      </div>
     </section>
 
     <section>
@@ -155,22 +155,11 @@
       <h3>Universitas Teknologi Digital Indonesia</h3>
       <div class="meta"><span data-t="edu.degree"></span><span data-t="edu.period"></span></div>
       <span class="gpa" data-t="edu.gpa"></span>
-      <p class="course" data-t="edu.course"></p>
-    </section>
-
-    <section class="certs">
-      <h2 data-t="h.certs"></h2>
-      <div id="certs"></div>
     </section>
   </aside>
 </div>
 
 <script>
-const CERTS = {
-  ai: ['AI for Software Engineer', 'Artificial Intelligence Introduction', 'Maximizing the Use of AI Tools', 'Maximizing the Use of ChatGPT', 'AI for Spreadsheets', 'AI for Content Marketing', 'Note-Taking Using AI'],
-  web: ['Introduction to CSS', 'CSS Box Model', 'Internet Introduction'],
-};
-
 const CV = {
   en: {
     role: 'Frontend Developer & UI/UX Designer',
@@ -178,22 +167,26 @@ const CV = {
     location: 'Yogyakarta, Indonesia',
     cityLabel: 'Location',
     phoneLabel: 'Phone / WhatsApp',
-    h: { summary: 'Profile', experience: 'Experience', projects: 'Selected projects', contact: 'Contact', skills: 'Skills', education: 'Education', certs: 'Certifications' },
+    h: { summary: 'Profile', experience: 'Experience & Organizations', projects: 'Selected projects', contact: 'Contact', skills: 'Skills', education: 'Education' },
     summary:
-      'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX. I build responsive, accessible interfaces with React and Tailwind CSS, design in Figma, and ship interactive work people can try right in the browser, from bilingual fan sites to playable games. Recently completed the MSIB Batch 4 Python Machine Learning internship at Vinix7 with a very good rating.',
+      'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX. I build responsive, accessible interfaces with React and Tailwind CSS, design in Figma, and ship interactive work people can try right in the browser, from bilingual fan sites to playable games.',
     exp: {
       role: 'Python Machine Learning Intern',
       period: 'Feb – Jun 2026',
       program: 'MSIB Kampus Merdeka Batch 4',
       points: ['Completed the independent internship in the Python Machine Learning division with a "very good" rating.'],
     },
+    org: {
+      role: 'Daily Board Member, Interests & Talents',
+      period: '',
+      place: 'UKM IK (student activity unit)',
+      points: ['Mentored the Frontend (FE) Study Club for IK prospective members (CA IK 2025).'],
+    },
     edu: {
       degree: "Bachelor's in Informatics",
       period: '2023 – Present',
       gpa: 'GPA 3.55 / 4.00',
-      course: '<b>Relevant coursework:</b> Web Client Programming, Web Frameworks, Mobile Frameworks, Software Engineering, Systems Analysis & Design, Machine Learning, Computer Vision, Big Data Analytics',
     },
-    certGroups: [['MySkill · Dec 2025', CERTS.ai], ['MySkill · Oct 2025', CERTS.web]],
     skills: [
       ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
       ['UI/UX', 'Figma, wireframes, prototypes, design systems, motion'],
@@ -234,22 +227,26 @@ const CV = {
     location: 'Yogyakarta, Indonesia',
     cityLabel: 'Domisili',
     phoneLabel: 'Telepon / WhatsApp',
-    h: { summary: 'Profil', experience: 'Pengalaman', projects: 'Proyek pilihan', contact: 'Kontak', skills: 'Keahlian', education: 'Pendidikan', certs: 'Sertifikasi' },
+    h: { summary: 'Profil', experience: 'Pengalaman & Organisasi', projects: 'Proyek pilihan', contact: 'Kontak', skills: 'Keahlian', education: 'Pendidikan' },
     summary:
-      'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX. Saya membangun antarmuka yang responsif dan mudah diakses dengan React dan Tailwind CSS, mendesain di Figma, dan merilis karya interaktif yang bisa langsung dicoba di browser, dari situs fan dua bahasa sampai game. Baru saja menyelesaikan magang MSIB Batch 4 bidang Python Machine Learning di Vinix7 dengan predikat sangat baik.',
+      'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX. Saya membangun antarmuka yang responsif dan mudah diakses dengan React dan Tailwind CSS, mendesain di Figma, dan merilis karya interaktif yang bisa langsung dicoba di browser, dari situs fan dua bahasa sampai game.',
     exp: {
       role: 'Magang Python Machine Learning',
       period: 'Feb – Jun 2026',
       program: 'MSIB Kampus Merdeka Batch 4',
       points: ['Menyelesaikan magang mandiri di Divisi Python Machine Learning dengan predikat "sangat baik".'],
     },
+    org: {
+      role: 'Pengurus Harian Minat Bakat',
+      period: '',
+      place: 'UKM IK',
+      points: ['Berkesempatan menjadi mentor Study Club bagian Frontend (FE) bagi Calon Anggota (CA) IK 2025.'],
+    },
     edu: {
       degree: 'S1 Informatika',
       period: '2023 – Sekarang',
       gpa: 'IPK 3,55 / 4,00',
-      course: '<b>Mata kuliah relevan:</b> Pemrograman Web Client, Framework Web, Framework Mobile, Rekayasa Perangkat Lunak, Analisis & Desain Sistem, Machine Learning, Computer Vision, Big Data Analytics',
     },
-    certGroups: [['MySkill · Des 2025', CERTS.ai], ['MySkill · Okt 2025', CERTS.web]],
     skills: [
       ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
       ['UI/UX', 'Figma, wireframe, prototipe, design system, motion'],
@@ -291,16 +288,17 @@ const CV = {
 const VARIANTS = {
   gaming: {
     // 'portfolio' is the base CV's first project, whose name differs per language.
-    order: ['portfolio', 'Legenda Lembah Angin', 'Kopi Tycoon', 'PortoGameLab', 'Fujimoto Archive', 'SpendWise API'],
+    // SpendWise API (backend) stays in the general CV; left out here so the page keeps a bottom margin.
+    order: ['portfolio', 'Legenda Lembah Angin', 'Kopi Tycoon', 'PortoGameLab', 'Fujimoto Archive'],
     en: {
       role: 'Frontend Developer & UI/UX Designer · Game Developer',
       summary:
-        'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX, with a strong interest in game development. I build responsive interfaces with React and Tailwind CSS, design in Figma, and make games people can play right in the browser, like the RPG Legenda Lembah Angin and the idle game Kopi Tycoon (Godot 4). Recently completed the MSIB Batch 4 Python Machine Learning internship at Vinix7 with a very good rating.',
+        'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX, with a strong interest in game development. I build responsive interfaces with React and Tailwind CSS, design in Figma, and make browser games like Legenda Lembah Angin and Kopi Tycoon (Godot 4).',
     },
     id: {
       role: 'Frontend Developer & UI/UX Designer · Game Developer',
       summary:
-        'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX, dengan minat kuat di game development. Saya membangun antarmuka responsif dengan React dan Tailwind CSS, mendesain di Figma, dan membuat game yang bisa langsung dimainkan di browser, seperti RPG Legenda Lembah Angin dan game idle Kopi Tycoon (Godot 4). Baru saja menyelesaikan magang MSIB Batch 4 bidang Python Machine Learning di Vinix7 dengan predikat sangat baik.',
+        'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX, dengan minat kuat di game development. Saya membangun antarmuka responsif dengan React dan Tailwind CSS, mendesain di Figma, dan membuat game browser seperti Legenda Lembah Angin dan Kopi Tycoon (Godot 4).',
     },
   },
 };
@@ -329,8 +327,6 @@ document.getElementById('projects').innerHTML = t.projects.map((p) => `
   </div>`).join('');
 document.getElementById('skills').innerHTML = t.skills
   .map(([k, v]) => `<div class="skill"><b>${k}</b><span>${v}</span></div>`).join('');
-document.getElementById('certs').innerHTML = t.certGroups
-  .map(([g, list]) => `<div class="grp"><b>${g}</b><ul>${list.map((x) => `<li>${x}</li>`).join('')}</ul></div>`).join('');
 </script>
 </body>
 </html>
