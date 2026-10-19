@@ -30,7 +30,6 @@ function ReelCard({ item, index, count, position, travel, active, onOpen }) {
       style={{ transform, opacity, backgroundColor, zIndex, pointerEvents: active ? 'auto' : 'none' }}
       tabIndex={active ? 0 : -1}
       aria-hidden={!active}
-      aria-label={item.openLabel ?? `Open ${item.label} section`}
       onClick={event => onOpen(item, index, event)}
     >
       <Motion.div className="mobile-card__content" style={{ opacity: contentOpacity }}>

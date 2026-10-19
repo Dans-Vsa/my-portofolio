@@ -370,7 +370,7 @@ const InfiniteSpiral = ({
         }
       }}
     >
-      <div className="infinite-spiral__stage" role="list" aria-label="Section preview spiral">
+      <div className="infinite-spiral__stage" role="group" aria-label="Section preview spiral">
         {items.map((item, index) => {
           const Card = item.href ? 'a' : 'div';
           return (
@@ -386,7 +386,6 @@ const InfiniteSpiral = ({
               rel={item.target === '_blank' ? 'noreferrer' : undefined}
               role={item.href ? undefined : 'button'}
               tabIndex={0}
-              aria-label={item.label}
               onClick={(e) => {
                 if (!dragMovedRef.current && onCardClick) {
                   e.stopPropagation();

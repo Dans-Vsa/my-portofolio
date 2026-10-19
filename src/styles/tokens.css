@@ -3,7 +3,7 @@
    source — it can't be self-hosted without a purchased license. Switzer
    (Fontshare, free) is used instead: it's purpose-built as a close, modern
    grotesk alternative to Suisse Int'l, much closer than a generic fallback. */
-@import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap');
+/* Switzer is loaded from index.html without blocking first paint. */
 
 :root {
   --color-bg: #f6f6f6;

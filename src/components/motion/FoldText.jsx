@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import './FoldText.css';
 
-gsap.registerPlugin(ScrollTrigger);
+// ScrollTrigger is only needed for trigger="scroll", so it is loaded on demand to keep the home bundle small.
+const loadScrollTrigger = () =>
+  import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+    gsap.registerPlugin(ScrollTrigger);
+    return ScrollTrigger;
+  });
 
 const HINGE_CONFIG = {
   top: { origin: '50% 0%', rotateX: -92, rotateY: 0 },
@@ -139,6 +143,7 @@ const FoldText = ({
     };
 
     let scrollTrigger;
+    let disposed = false;
     let hoverHandler;
 
     if (trigger === 'hover') {
@@ -153,11 +158,14 @@ const FoldText = ({
       root.addEventListener('mouseenter', hoverHandler);
     } else if (trigger === 'scroll') {
       gsap.set(pieces, fromVars);
-      scrollTrigger = ScrollTrigger.create({
-        trigger: root,
-        start: 'top 82%',
-        once: true,
-        onEnter: () => play(false),
+      loadScrollTrigger().then((ScrollTrigger) => {
+        if (disposed) return;
+        scrollTrigger = ScrollTrigger.create({
+          trigger: root,
+          start: 'top 82%',
+          once: true,
+          onEnter: () => play(false),
+        });
       });
     } else if (trigger === 'loop') {
       play(true);
@@ -166,6 +174,7 @@ const FoldText = ({
     }
 
     return () => {
+      disposed = true;
       if (hoverHandler) root.removeEventListener('mouseenter', hoverHandler);
       scrollTrigger?.kill();
       killTimeline();

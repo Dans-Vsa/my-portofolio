@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { FaUserAlt, FaLaptopCode, FaLayerGroup, FaCertificate, FaEnvelope } from 'react-icons/fa';
 import { FiArrowLeft, FiUser, FiMessageCircle } from 'react-icons/fi';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -6,11 +6,18 @@ import './App.css';
 import InfiniteSpiral from './components/motion/InfiniteSpiral';
 import MobileCardStage from './components/motion/MobileCardStage';
 import Home, { HomeProfile } from './sections/Home';
-import About from './sections/About';
-import Projects from './sections/Projects';
-import TechStack from './sections/TechStack';
-import Certificates from './sections/Certificates';
-import Contact from './sections/Contact';
+// Sections load on demand so the home screen ships a small bundle; they are prefetched once idle.
+const loadAbout = () => import('./sections/About');
+const loadProjects = () => import('./sections/Projects');
+const loadTechStack = () => import('./sections/TechStack');
+const loadCertificates = () => import('./sections/Certificates');
+const loadContact = () => import('./sections/Contact');
+const About = lazy(loadAbout);
+const Projects = lazy(loadProjects);
+const TechStack = lazy(loadTechStack);
+const Certificates = lazy(loadCertificates);
+const Contact = lazy(loadContact);
+const prefetchSections = () => [loadAbout, loadProjects, loadTechStack, loadCertificates, loadContact].forEach((load) => load());
 import PreviewTile from './sections/previews/PreviewTile';
 import { portfolioData } from './data/portfolioData';
 import { playReelClick } from './lib/reelClick';
@@ -83,12 +90,17 @@ const buildSpiralItems = (cards) => [
 
 function App() {
   const { t } = useLanguage();
-  const SPIRAL_ITEMS = useMemo(
-    () => buildSpiralItems(t.cards).map((item) => ({ ...item, openLabel: `${t.home.goTo} ${item.label}` })),
-    [t],
-  );
+  const SPIRAL_ITEMS = useMemo(() => buildSpiralItems(t.cards), [t]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(null);
+
+  // Warm the section chunks after first paint so opening a card never waits on the network.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = idle(prefetchSections, { timeout: 3000 });
+    return () => cancel(id);
+  }, []);
   const ActiveSection = activeSection ? SECTIONS[activeSection] : null;
   const [transitioningBack, setTransitioningBack] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -207,7 +219,9 @@ function App() {
               isMobile ? 'shadow-[0_24px_60px_rgba(0,0,0,0.7)]' : 'shadow-[24px_0_60px_rgba(0,0,0,0.6)]'
             }`}
           >
-            <ActiveSection onBack={handleBack} isBackTransitioning={!!transitioningBack} />
+            <Suspense fallback={<div className="w-full h-full bg-bg" />}>
+              <ActiveSection onBack={handleBack} isBackTransitioning={!!transitioningBack} />
+            </Suspense>
           </Motion.div>
         ) : isMobile ? (
           /* Mobile layout: identity, vertical 3D reel, and profile/contact actions. */
