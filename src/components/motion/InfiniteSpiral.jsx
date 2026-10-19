@@ -11,6 +11,12 @@ const smoothstep = (min, max, value) => {
   return x * x * (3 - 2 * x);
 };
 
+// Flywheel feel: input adds speed instead of jumping position, and friction bleeds it off.
+// FRICTION is the decay rate per second (about a 1s coast), WHEEL_GAIN how far a scroll throws the wheel.
+const FRICTION = 1.1;
+const WHEEL_GAIN = 1.3;
+const MAX_SPIN = 7; // cards per second
+
 const InfiniteSpiral = ({
   items = [],
   speed = 0.55,
@@ -55,6 +61,8 @@ const InfiniteSpiral = ({
   const lastActiveIndexRef = useRef(-1);
   const lastStepRef = useRef(null);
   const lastInteractionRef = useRef(0);
+  const dragVelocityRef = useRef(0);
+  const lastPointerTimeRef = useRef(0);
 
   useEffect(() => {
     hiddenCardIdRef.current = hiddenCardId;
@@ -96,16 +104,25 @@ const InfiniteSpiral = ({
       if (e.deltaMode === 1) delta *= 32;
       else if (e.deltaMode === 2) delta *= 100;
 
-      const stepDelta = (delta * scrollSpeedMultiplier) / 400;
-      targetProgressRef.current += clamp(stepDelta, -1.5, 1.5);
+      const stepDelta = clamp((delta * scrollSpeedMultiplier) / 400, -1.5, 1.5);
+      if (reducedMotion.matches) {
+        targetProgressRef.current += stepDelta;
+        return;
+      }
+      // Coasting covers stepDelta * WHEEL_GAIN cards in total: v / FRICTION.
+      autoSpeedRef.current = clamp(autoSpeedRef.current + stepDelta * FRICTION * WHEEL_GAIN, -MAX_SPIN, MAX_SPIN);
     };
 
     // Touch swipe handler for mobile
     let touchLastY = 0;
+    let touchLastTime = 0;
+    let touchVelocity = 0;
     const handleTouchStart = (e) => {
       if (!scrollEnabled || e.touches.length === 0) return;
       markInteraction();
       touchLastY = e.touches[0].clientY;
+      touchLastTime = performance.now();
+      touchVelocity = 0;
     };
 
     const handleTouchMove = (e) => {
@@ -114,13 +131,27 @@ const InfiniteSpiral = ({
       const currentY = e.touches[0].clientY;
       const deltaY = touchLastY - currentY;
       touchLastY = currentY;
-      const stepDelta = (deltaY * scrollSpeedMultiplier) / 220;
-      targetProgressRef.current += clamp(stepDelta, -1.2, 1.2);
+      const stepDelta = clamp((deltaY * scrollSpeedMultiplier) / 220, -1.2, 1.2);
+      targetProgressRef.current += stepDelta;
+      const now = performance.now();
+      const dt = Math.max((now - touchLastTime) / 1000, 0.008);
+      touchLastTime = now;
+      touchVelocity = touchVelocity * 0.6 + (stepDelta / dt) * 0.4;
+      autoSpeedRef.current = 0;
+    };
+
+    const handleTouchEnd = () => {
+      if (!scrollEnabled || reducedMotion.matches) return;
+      if (performance.now() - touchLastTime < 90) {
+        autoSpeedRef.current = clamp(touchVelocity * 0.8, -MAX_SPIN, MAX_SPIN);
+      }
+      touchVelocity = 0;
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     const render = (time) => {
       const delta = Math.min((time - previousTime) / 1000, 0.05);
@@ -133,10 +164,17 @@ const InfiniteSpiral = ({
       const cruiseSpeed = autoEnabled ? speed * directionMultiplier : idle ? idleSpeed : 0;
       const desiredAutoSpeed =
         visibleRef.current && !reducedMotion.matches && !motionPaused ? cruiseSpeed : 0;
-      // Idle drift eases in and out slowly; scripted auto mode keeps its snappier blend.
-      const speedBlend = 1 - Math.exp(-delta * (autoEnabled ? 7 : 1.4));
-      autoSpeedRef.current += (desiredAutoSpeed - autoSpeedRef.current) * speedBlend;
+      if (draggingRef.current) {
+        // A hand on the wheel holds it; the pointer moves the spiral directly.
+        autoSpeedRef.current = 0;
+      } else {
+        // Scripted auto mode snaps to speed; the flywheel coasts down with friction.
+        const speedBlend = 1 - Math.exp(-delta * (autoEnabled ? 7 : FRICTION));
+        autoSpeedRef.current += (desiredAutoSpeed - autoSpeedRef.current) * speedBlend;
+      }
       targetProgressRef.current += autoSpeedRef.current * delta;
+      // Faster than the idle cruise means someone set it spinning.
+      const userSpin = draggingRef.current || Math.abs(autoSpeedRef.current) > Math.max(idleSpeed * 1.6, 0.3);
 
       const followBlend = 1 - Math.exp(-delta * (draggingRef.current ? 22 : 11));
       progressRef.current += (targetProgressRef.current - progressRef.current) * followBlend;
@@ -198,7 +236,7 @@ const InfiniteSpiral = ({
           lastStepRef.current = stepIndex;
         } else if (stepIndex !== lastStepRef.current) {
           // Only tick for user-driven motion; the idle drift stays silent.
-          if (Math.abs(stepIndex - lastStepRef.current) < 8 && !idle) {
+          if (Math.abs(stepIndex - lastStepRef.current) < 8 && (!idle || userSpin)) {
             onStep();
           }
           lastStepRef.current = stepIndex;
@@ -217,6 +255,7 @@ const InfiniteSpiral = ({
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [
     items,
@@ -253,6 +292,11 @@ const InfiniteSpiral = ({
   };
 
   const stopDragging = (event) => {
+    // Let go mid-swipe and the wheel keeps the throw.
+    if (draggingRef.current && performance.now() - lastPointerTimeRef.current < 90) {
+      autoSpeedRef.current = clamp(dragVelocityRef.current * 0.8, -MAX_SPIN, MAX_SPIN);
+    }
+    dragVelocityRef.current = 0;
     draggingRef.current = false;
     if (event && event.currentTarget) {
       if (typeof event.currentTarget.hasPointerCapture === 'function' && event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -278,6 +322,8 @@ const InfiniteSpiral = ({
         pointerStartXRef.current = event.clientX;
         pointerStartYRef.current = event.clientY;
         lastPointerYRef.current = event.clientY;
+        lastPointerTimeRef.current = performance.now();
+        dragVelocityRef.current = 0;
         dragMovedRef.current = false;
         draggingRef.current = false;
         lastInteractionRef.current = performance.now();
@@ -304,7 +350,12 @@ const InfiniteSpiral = ({
         if (draggingRef.current) {
           const pointerDelta = event.clientY - lastPointerYRef.current;
           lastPointerYRef.current = event.clientY;
-          targetProgressRef.current -= pointerDelta / Math.max(verticalSpacing, 1);
+          const step = -pointerDelta / Math.max(verticalSpacing, 1);
+          targetProgressRef.current += step;
+          const now = performance.now();
+          const dt = Math.max((now - lastPointerTimeRef.current) / 1000, 0.008);
+          lastPointerTimeRef.current = now;
+          dragVelocityRef.current = dragVelocityRef.current * 0.6 + (step / dt) * 0.4;
         }
       }}
       onPointerUp={stopDragging}

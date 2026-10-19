@@ -303,7 +303,8 @@ function App() {
                   onCardClick={handleCardClick}
                   stepsPerCard={4}
                   idleSpeed={0.22}
-                  idleDelay={2500}
+                  idleDelay={700}
+                  pauseOnHover={false}
                 />
               </div>
 
