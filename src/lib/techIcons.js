@@ -21,6 +21,7 @@ import {
   SiMysql,
   SiSqlite,
   SiTailwindcss,
+  SiTypescript,
   SiVite,
 } from 'react-icons/si';
 
@@ -46,6 +47,7 @@ const TECH_ICONS = {
   SiMysql,
   SiSqlite,
   SiTailwindcss,
+  SiTypescript,
   SiVite,
 };
 
