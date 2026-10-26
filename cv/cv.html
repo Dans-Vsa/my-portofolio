@@ -340,7 +340,12 @@ const params = new URLSearchParams(location.search);
 const lang = params.get('lang') === 'id' ? 'id' : 'en';
 const t = CV[lang];
 const variant = VARIANTS[params.get('variant')];
-if (variant) Object.assign(t, variant[lang]);
+if (variant) {
+  Object.assign(t, variant[lang]);
+  // Variants list fewer projects, so experience goes back above them in the main column.
+  const main = document.querySelector('main');
+  main.insertBefore(document.querySelector('section.exp'), main.children[1]);
+}
 const portfolio = t.projects[0];
 t.projects = (variant ? variant.order : BASE_ORDER)
   .map((name) => (name === 'portfolio' ? portfolio : t.projects.find((p) => p.name === name)))
