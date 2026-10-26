@@ -82,6 +82,9 @@
 
   aside h2 { color: var(--ink); }
   aside { padding-top: 0; }
+  /* Experience sits in the narrow sidebar: stack the period under the role. */
+  aside .row { display: block; }
+  aside .when { display: block; margin-top: 0.3mm; }
   .contact li { list-style: none; font-size: 8.3pt; line-height: 1.35; }
   .contact li + li { margin-top: 1.1mm; }
   .contact .k { display: block; color: var(--faint); font-size: 6.6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; }
@@ -123,7 +126,16 @@
       <p class="summary" data-t="summary"></p>
     </section>
 
+
     <section>
+      <h2 data-t="h.projects"></h2>
+      <div id="projects"></div>
+    </section>
+
+  </main>
+
+  <aside>
+    <section class="exp">
       <h2 data-t="h.experience"></h2>
       <div class="item">
         <div class="row"><h3 data-t="exp.role"></h3><span class="when" data-t="exp.period"></span></div>
@@ -136,15 +148,6 @@
         <ul data-list="org.points"></ul>
       </div>
     </section>
-
-    <section>
-      <h2 data-t="h.projects"></h2>
-      <div id="projects"></div>
-    </section>
-
-  </main>
-
-  <aside>
     <section>
       <h2 data-t="h.skills"></h2>
       <div id="skills"></div>
@@ -162,14 +165,14 @@
 <script>
 const CV = {
   en: {
-    role: 'Frontend Developer & UI/UX Designer',
+    role: 'Software Developer · Frontend, UI/UX, Games & Python',
     open: 'Open to internships, freelance & full-time roles',
     location: 'Yogyakarta, Indonesia',
     cityLabel: 'Location',
     phoneLabel: 'Phone / WhatsApp',
     h: { summary: 'Profile', experience: 'Experience & Organizations', projects: 'Selected projects', contact: 'Contact', skills: 'Skills', education: 'Education' },
     summary:
-      'Informatics student at Universitas Teknologi Digital Indonesia and frontend developer focused on UI/UX. I build responsive, accessible interfaces with React and Tailwind CSS, design in Figma, and ship interactive work people can try right in the browser, from bilingual fan sites to playable games.',
+      'Informatics student at Universitas Teknologi Digital Indonesia who builds across the stack. On the web I make responsive, accessible interfaces with React, TypeScript and Tailwind CSS and design them in Figma; I also make browser games with Godot 4 and Canvas, and Python tools from REST APIs to computer vision. Projects ship with tests, CI and a live demo where possible.',
     exp: {
       role: 'Python Machine Learning Intern',
       period: 'Feb – Jun 2026',
@@ -188,11 +191,12 @@ const CV = {
       gpa: 'GPA 3.55 / 4.00',
     },
     skills: [
-      ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
-      ['UI/UX', 'Figma, wireframes, prototypes, design systems, motion'],
-      ['Backend & data', 'Python, FastAPI, Node.js, PHP, Laravel, MySQL, SQLite, MongoDB'],
+      ['Frontend', 'React, TypeScript, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Framer Motion, Vite, PWA'],
+      ['UI/UX', 'Figma, wireframes, prototypes, design systems, motion, accessibility'],
+      ['Backend & data', 'Python, FastAPI, SQLAlchemy, PHP, Laravel, Node.js, MySQL, SQLite'],
+      ['Computer vision & ML', 'MediaPipe, OpenCV, scikit-learn, NumPy'],
       ['Game dev', 'Godot 4 (GDScript), HTML5 Canvas'],
-      ['Tools', 'Git & GitHub, Docker, VS Code, Vercel'],
+      ['Testing & tools', 'pytest, Vitest, Git & GitHub, GitHub Actions CI, Docker, Vercel'],
     ],
     projects: [
       {
@@ -200,8 +204,8 @@ const CV = {
         text: 'Portfolio with a 3D spiral navigation, an ID/EN switch, recorded demo videos for every project and a contact form that delivers straight to email.',
       },
       {
-        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '7 sites'],
-        text: "Bilingual fan archive of Tatsuki Fujimoto's work with six companion sites, including a 171-character Chainsaw Man encyclopedia with spoiler guards.",
+        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '10 sites'],
+        text: "Bilingual fan archive of Tatsuki Fujimoto's work with nine companion sites, including a 171-character Chainsaw Man encyclopedia with spoiler guards.",
       },
       {
         name: 'Legenda Lembah Angin', url: 'dans-vsa.github.io/legenda-lembah-angin', tags: ['JavaScript', 'Canvas', 'Godot 4'],
@@ -219,17 +223,29 @@ const CV = {
         name: 'SpendWise API', url: 'github.com/Dans-Vsa/spendwise-api', tags: ['FastAPI', 'SQLAlchemy', 'pytest', 'Docker'],
         text: 'Personal finance REST API with JWT auth, monthly budgets, reports and CSV import/export, tested in CI.',
       },
+      {
+        name: 'habitloop', url: 'dans-vsa.github.io/habitloop', tags: ['React', 'TypeScript', 'PWA', 'Vitest'],
+        text: 'Local-first habit tracker with streaks, weekly goals, year heatmaps and an insights dashboard; installable and works offline.',
+      },
+      {
+        name: 'gesture-pilot', url: 'github.com/Dans-Vsa/gesture-pilot', tags: ['Python', 'MediaPipe', 'OpenCV', 'scikit-learn'],
+        text: 'Controls the computer with hand gestures from a webcam: real-time hand tracking, trainable gesture recognition and configurable actions.',
+      },
+      {
+        name: 'gitpulse & dupesweep', url: 'github.com/Dans-Vsa', tags: ['Python', 'CLI', 'pytest'],
+        text: 'Two command-line tools: git repository analytics with churn hotspots and heatmaps, and a safe duplicate-file cleaner with an undo log.',
+      },
     ],
   },
   id: {
-    role: 'Frontend Developer & UI/UX Designer',
+    role: 'Software Developer · Frontend, UI/UX, Game & Python',
     open: 'Terbuka untuk magang, freelance & full-time',
     location: 'Yogyakarta, Indonesia',
     cityLabel: 'Domisili',
     phoneLabel: 'Telepon / WhatsApp',
     h: { summary: 'Profil', experience: 'Pengalaman & Organisasi', projects: 'Proyek pilihan', contact: 'Kontak', skills: 'Keahlian', education: 'Pendidikan' },
     summary:
-      'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia dan frontend developer yang berfokus pada UI/UX. Saya membangun antarmuka yang responsif dan mudah diakses dengan React dan Tailwind CSS, mendesain di Figma, dan merilis karya interaktif yang bisa langsung dicoba di browser, dari situs fan dua bahasa sampai game.',
+      'Mahasiswa Informatika di Universitas Teknologi Digital Indonesia yang membangun di banyak lapisan. Di web saya membuat antarmuka responsif dan mudah diakses dengan React, TypeScript, dan Tailwind CSS serta mendesainnya di Figma; saya juga membuat game browser dengan Godot 4 dan Canvas, serta tool Python dari REST API sampai computer vision. Proyek dilengkapi tes, CI, dan demo live bila memungkinkan.',
     exp: {
       role: 'Magang Python Machine Learning',
       period: 'Feb – Jun 2026',
@@ -248,11 +264,12 @@ const CV = {
       gpa: 'IPK 3,55 / 4,00',
     },
     skills: [
-      ['Frontend', 'React, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Framer Motion, Vite'],
-      ['UI/UX', 'Figma, wireframe, prototipe, design system, motion'],
-      ['Backend & data', 'Python, FastAPI, Node.js, PHP, Laravel, MySQL, SQLite, MongoDB'],
+      ['Frontend', 'React, TypeScript, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Framer Motion, Vite, PWA'],
+      ['UI/UX', 'Figma, wireframe, prototipe, design system, motion, aksesibilitas'],
+      ['Backend & data', 'Python, FastAPI, SQLAlchemy, PHP, Laravel, Node.js, MySQL, SQLite'],
+      ['Computer vision & ML', 'MediaPipe, OpenCV, scikit-learn, NumPy'],
       ['Game dev', 'Godot 4 (GDScript), HTML5 Canvas'],
-      ['Tools', 'Git & GitHub, Docker, VS Code, Vercel'],
+      ['Testing & tools', 'pytest, Vitest, Git & GitHub, GitHub Actions CI, Docker, Vercel'],
     ],
     projects: [
       {
@@ -260,8 +277,8 @@ const CV = {
         text: 'Portofolio dengan navigasi spiral 3D, pilihan bahasa ID/EN, video demo untuk setiap proyek, dan form kontak yang langsung masuk ke email.',
       },
       {
-        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '7 situs'],
-        text: 'Arsip fan dua bahasa untuk karya Tatsuki Fujimoto dengan enam situs pendamping, termasuk ensiklopedia 171 karakter Chainsaw Man dengan sensor spoiler.',
+        name: 'Fujimoto Archive', url: 'dans-vsa.github.io/fujimoto-archive', tags: ['HTML', 'CSS', 'JavaScript', '10 situs'],
+        text: 'Arsip fan dua bahasa untuk karya Tatsuki Fujimoto dengan sembilan situs pendamping, termasuk ensiklopedia 171 karakter Chainsaw Man dengan sensor spoiler.',
       },
       {
         name: 'Legenda Lembah Angin', url: 'dans-vsa.github.io/legenda-lembah-angin', tags: ['JavaScript', 'Canvas', 'Godot 4'],
@@ -279,12 +296,28 @@ const CV = {
         name: 'SpendWise API', url: 'github.com/Dans-Vsa/spendwise-api', tags: ['FastAPI', 'SQLAlchemy', 'pytest', 'Docker'],
         text: 'REST API keuangan pribadi dengan autentikasi JWT, anggaran bulanan, laporan, serta impor/ekspor CSV, diuji lewat CI.',
       },
+      {
+        name: 'habitloop', url: 'dans-vsa.github.io/habitloop', tags: ['React', 'TypeScript', 'PWA', 'Vitest'],
+        text: 'Pelacak kebiasaan local-first dengan streak, target mingguan, heatmap setahun, dan dashboard insight; bisa diinstal dan jalan offline.',
+      },
+      {
+        name: 'gesture-pilot', url: 'github.com/Dans-Vsa/gesture-pilot', tags: ['Python', 'MediaPipe', 'OpenCV', 'scikit-learn'],
+        text: 'Mengendalikan komputer dengan gerakan tangan lewat webcam: hand tracking real-time, pengenalan gesture yang bisa dilatih, dan aksi yang bisa diatur.',
+      },
+      {
+        name: 'gitpulse & dupesweep', url: 'github.com/Dans-Vsa', tags: ['Python', 'CLI', 'pytest'],
+        text: 'Dua tool command-line: analitik repositori git dengan hotspot perubahan dan heatmap, serta pembersih file duplikat yang aman dengan log undo.',
+      },
     ],
   },
 };
 
 // Tailored versions for specific applications: ?variant=gaming (Student Staff, Gaming Garage UTDI).
 // A variant overrides text and reorders projects; everything else comes from the base CV.
+// The universal CV (no variant) shows this selection; the other projects stay available to variants.
+// 'portfolio' is the base CV's first project, whose name differs per language.
+const BASE_ORDER = ['portfolio', 'habitloop', 'Fujimoto Archive', 'Legenda Lembah Angin', 'SpendWise API', 'gesture-pilot', 'gitpulse & dupesweep'];
+
 const VARIANTS = {
   gaming: {
     // 'portfolio' is the base CV's first project, whose name differs per language.
@@ -307,11 +340,11 @@ const params = new URLSearchParams(location.search);
 const lang = params.get('lang') === 'id' ? 'id' : 'en';
 const t = CV[lang];
 const variant = VARIANTS[params.get('variant')];
-if (variant) {
-  Object.assign(t, variant[lang]);
-  const portfolio = t.projects[0];
-  t.projects = variant.order.map((name) => (name === 'portfolio' ? portfolio : t.projects.find((p) => p.name === name))).filter(Boolean);
-}
+if (variant) Object.assign(t, variant[lang]);
+const portfolio = t.projects[0];
+t.projects = (variant ? variant.order : BASE_ORDER)
+  .map((name) => (name === 'portfolio' ? portfolio : t.projects.find((p) => p.name === name)))
+  .filter(Boolean);
 document.documentElement.lang = lang;
 const get = (path) => path.split('.').reduce((o, k) => o[k], t);
 
